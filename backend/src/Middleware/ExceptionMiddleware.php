@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Middleware;
 
+use App\Config\Config;
+use App\Config\Security\SecretSanitizer;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
@@ -28,32 +32,31 @@ class ExceptionMiddleware implements MiddlewareInterface
 
         if ($exception instanceof HttpException) {
             $statusCode = $exception->getCode();
-            $message = $exception->getMessage();
+            $message = SecretSanitizer::redact($exception->getMessage());
         } elseif ($exception instanceof \PDOException) {
             $message = 'Database Error';
-            // In development, you might want to show more details
-            if (($_ENV['APP_ENV'] ?? 'dev') === 'dev') {
-                $details = $exception->getMessage();
+            if (Config::get()->app()->isDevelopment()) {
+                $details = SecretSanitizer::redact($exception->getMessage());
             }
-        } else {
-            // General exception
-            if (($_ENV['APP_ENV'] ?? 'dev') === 'dev') {
-                $message = $exception->getMessage();
-                $details = [
-                    'file' => $exception->getFile(),
-                    'line' => $exception->getLine(),
-                    'trace' => explode("\n", $exception->getTraceAsString())
-                ];
-            }
+        } elseif (Config::get()->app()->isDevelopment()) {
+            $message = SecretSanitizer::redact($exception->getMessage());
+            $details = [
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+                'trace' => array_map(
+                    static fn (string $line): string => SecretSanitizer::redact($line),
+                    explode("\n", $exception->getTraceAsString())
+                ),
+            ];
         }
 
         $response = new \Slim\Psr7\Response();
         $payload = [
             'error' => true,
-            'message' => $message
+            'message' => $message,
         ];
 
-        if ($details) {
+        if ($details !== null) {
             $payload['details'] = $details;
         }
 

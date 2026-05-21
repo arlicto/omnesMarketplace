@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { useAuthStore } from '../store/authStore';
@@ -20,13 +20,13 @@ export const Login: React.FC = () => {
     setError('');
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/login`, {
+      const response = await apiClient.post('/auth/login', {
         email,
         password,
       });
 
-      const { user, jwt } = response.data;
-      setAuth(user, jwt);
+      const { user, access_token, jwt } = response.data;
+      setAuth(user, access_token || jwt);
       navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 import { Layout } from '../components/Layout';
 import { ProductCard } from '../components/ProductCard';
 import { Button } from '../components/Button';
@@ -12,10 +12,11 @@ export const Home: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/products`);
-        setProducts(response.data);
+        const response = await apiClient.get('/products');
+        setProducts(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error('Error fetching products:', error);
+        setProducts([]);
       } finally {
         setIsLoading(false);
       }
@@ -24,7 +25,7 @@ export const Home: React.FC = () => {
     fetchProducts();
   }, []);
 
-  const DAILY_SELECTION = products.slice(0, 4);
+  const DAILY_SELECTION = Array.isArray(products) ? products.slice(0, 4) : [];
 
   const FLASH_SALES = [
     { name: 'Nomad Carry-On', price: 120, oldPrice: 185, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCxkqrD_jf2GesDZAyU1BLidgV0y33BbH5L_1jdB7D5XjgdC-Z2tTsC0IcM-ldXRBYS866DQjZycoMsLHPSwmMJ_n8JFkOoiFnjCo9CPY_Er_DpEIokEUTJiReV1wmEeOAeR6bUVLCTJTKKs8lLqqx6oifhopYcQO6iuCfXCseTF40bhCqn5jVm1UXzocIKlA9KBEUrHVYceZHfDqMLiwBUI-RS18bJKB9CY-EVcA0zQRm6VSGlK62wnzUSsRzwzrcAc3gUVDgL31U' },

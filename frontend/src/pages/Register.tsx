@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 
@@ -26,7 +26,7 @@ export const Register: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/register`, {
+      await apiClient.post('/auth/register', {
         username,
         email,
         password,

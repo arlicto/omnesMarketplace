@@ -1,51 +1,49 @@
 <?php
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
+
+declare(strict_types=1);
+
+use App\Config\Config;
+use App\Config\EnvLoader;
+use App\Services\LogMailer;
+use App\Services\MailerInterface;
 use Slim\Factory\AppFactory;
-use Dotenv\Dotenv;
+use App\Core\Container;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// Load environment variables
-$dotenv = Dotenv::createImmutable(__DIR__ . '/..');
-$dotenv->safeLoad();
+EnvLoader::bootstrap(dirname(__DIR__));
 
+$container = new Container();
+
+$container->set(PDO::class, function () {
+    return \App\Services\DatabaseService::getConnection();
+});
+
+$container->set(MailerInterface::class, function () {
+    $logPath = dirname(__DIR__) . '/' . Config::get()->logging()->path;
+    $mailLog = dirname($logPath) . '/mail.log';
+
+    return new LogMailer($mailLog);
+});
+
+AppFactory::setContainer($container);
 $app = AppFactory::create();
 
-// Add Body Parsing Middleware
 $app->addBodyParsingMiddleware();
-
-// Add Global Exception Middleware
+$app->add(new \App\Middleware\CorsMiddleware());
 $app->add(new \App\Middleware\ExceptionMiddleware());
+$app->add(new \App\Middleware\SecurityHeadersMiddleware());
+$app->add(new \App\Middleware\RequestLoggingMiddleware());
 
-// Add Error Middleware
-$app->addErrorMiddleware(true, true, true);
+$appConfig = Config::get()->app();
 
-$app->get('/api/health', function (Request $request, Response $response, $args) {
-    $dbStatus = 'disconnected';
-    try {
-        $db = \App\Services\DatabaseService::getConnection();
-        $dbStatus = 'connected';
-    } catch (\Exception $e) {
-        $dbStatus = 'error: ' . $e->getMessage();
-    }
+$app->addErrorMiddleware(
+    $appConfig->isDevelopment(),
+    true,
+    !$appConfig->isProduction()
+);
 
-    $response->getBody()->write(json_encode([
-        'status' => 'ok',
-        'timestamp' => time(),
-        'db_host' => $_ENV['DB_HOST'] ?? 'not set',
-        'database' => $dbStatus
-    ]));
-    return $response->withHeader('Content-Type', 'application/json');
-});
-
-$app->group('/api/v1', function (\Slim\Routing\RouteCollectorProxy $group) {
-    $group->post('/register', \App\Controllers\V1\AuthController::class . ':register');
-    $group->post('/login', \App\Controllers\V1\AuthController::class . ':login');
-
-    $group->get('/products', \App\Controllers\V1\ProductController::class . ':getAll');
-    $group->get('/products/{id}', \App\Controllers\V1\ProductController::class . ':getOne');
-    $group->post('/products', \App\Controllers\V1\ProductController::class . ':create');
-});
+$registerRoutes = require __DIR__ . '/../routes/api.php';
+$registerRoutes($app);
 
 $app->run();

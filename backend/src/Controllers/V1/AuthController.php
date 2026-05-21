@@ -1,76 +1,98 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Controllers\V1;
 
-use App\Database;
-use App\Models\User;
+use App\Config\Security\SecurityMonitor;
+use App\Services\AuthException;
+use App\Services\AuthService;
+use App\Support\JsonResponse;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Firebase\JWT\JWT;
 
-class AuthController {
-    private $db;
-    private $key = "your_secret_key"; // Should be in .env
-
-    public function __construct() {
-        $database = new Database();
-        $this->db = $database->getConnection();
+final class AuthController
+{
+    public function __construct(private AuthService $auth)
+    {
     }
 
-    public function register(Request $request, Response $response) {
-        $data = json_decode($request->getBody(), true);
-        
-        if (empty($data['username']) || empty($data['email']) || empty($data['password'])) {
-            $response->getBody()->write(json_encode(["message" => "Incomplete data."]));
-            return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
-        }
-
-        $user = new User($this->db);
-        $user->username = $data['username'];
-        $user->email = $data['email'];
-        $user->password = $data['password'];
-
-        if ($user->create()) {
-            $response->getBody()->write(json_encode(["message" => "User was created."]));
-            return $response->withStatus(201)->withHeader('Content-Type', 'application/json');
-        }
-
-        $response->getBody()->write(json_encode(["message" => "Unable to create user."]));
-        return $response->withStatus(503)->withHeader('Content-Type', 'application/json');
+    public function register(Request $request, Response $response): Response
+    {
+        return $this->handle(fn () => $this->auth->register(
+            (array) $request->getParsedBody(),
+            $response
+        ));
     }
 
-    public function login(Request $request, Response $response) {
-        $data = json_decode($request->getBody(), true);
-        
-        $user = new User($this->db);
-        $user->email = $data['email'];
-        $email_exists = $user->emailExists();
+    public function login(Request $request, Response $response): Response
+    {
+        return $this->handle(fn () => $this->auth->login(
+            (array) $request->getParsedBody(),
+            $request,
+            $response
+        ));
+    }
 
-        if ($email_exists && password_verify($data['password'], $user->password)) {
-            $token = [
-                "iat" => time(),
-                "exp" => time() + 3600,
-                "data" => [
-                    "id" => $user->id,
-                    "username" => $user->username,
-                    "email" => $user->email
-                ]
-            ];
-
-            $jwt = JWT::encode($token, $this->key, 'HS256');
-
-            $response->getBody()->write(json_encode([
-                "message" => "Successful login.",
-                "jwt" => $jwt,
-                "user" => [
-                    "id" => $user->id,
-                    "username" => $user->username,
-                    "email" => $user->email
-                ]
-            ]));
-            return $response->withStatus(200)->withHeader('Content-Type', 'application/json');
+    public function logout(Request $request, Response $response): Response
+    {
+        $userId = $request->getAttribute('user_id');
+        $ip = $request->getServerParams()['REMOTE_ADDR'] ?? 'unknown';
+        if ($userId !== null) {
+            SecurityMonitor::logSuccessfulLogin((int) $userId, 'logout', $ip);
         }
+        return $this->handle(fn () => $this->auth->logout($request, $response));
+    }
 
-        $response->getBody()->write(json_encode(["message" => "Login failed."]));
-        return $response->withStatus(401)->withHeader('Content-Type', 'application/json');
+    public function forgotPassword(Request $request, Response $response): Response
+    {
+        return $this->handle(function () use ($request) {
+            $result = $this->auth->forgotPassword((array) $request->getParsedBody());
+
+            return JsonResponse::make($result);
+        });
+    }
+
+    public function resetPassword(Request $request, Response $response): Response
+    {
+        return $this->handle(function () use ($request) {
+            $result = $this->auth->resetPassword((array) $request->getParsedBody());
+
+            return JsonResponse::make($result);
+        });
+    }
+
+    public function verifyEmail(Request $request, Response $response): Response
+    {
+        return $this->handle(function () use ($request) {
+            $body = (array) $request->getParsedBody();
+            $query = $request->getQueryParams();
+            if (empty($body['token']) && !empty($query['token'])) {
+                $body['token'] = $query['token'];
+            }
+            $result = $this->auth->verifyEmail($body);
+
+            return JsonResponse::make($result);
+        });
+    }
+
+    public function me(Request $request, Response $response): Response
+    {
+        return $this->handle(function () use ($request) {
+            $userId = (int) $request->getAttribute('user_id');
+            $result = $this->auth->me($userId);
+
+            return JsonResponse::make($result);
+        });
+    }
+
+    /** @param callable(): Response $action */
+    private function handle(callable $action): Response
+    {
+        try {
+            return $action();
+        } catch (AuthException $e) {
+            return JsonResponse::error($e->getMessage(), $e->getStatusCode());
+        }
     }
 }

@@ -11,79 +11,7 @@ import { BuyerAccount } from './pages/BuyerAccount';
 import { Notifications } from './pages/Notifications';
 import { Negotiations } from './pages/Negotiations';
 import ProtectedRoute from './components/ProtectedRoute';
-import { useAuthStore } from './store/authStore';
 
-export const RouterWrapper = () => {
-  const { isAuthenticated, user } = useAuthStore();
-  const userRole = user?.role || 'buyer';
-
-  return createBrowserRouter([
-    {
-      path: '/',
-      element: <Home />,
-    },
-    {
-      path: '/login',
-      element: <Login />,
-    },
-    {
-      path: '/register',
-      element: <Register />,
-    },
-    {
-      path: '/browse',
-      element: <Browse />,
-    },
-    {
-      path: '/product/:id',
-      element: <ProductDetail />,
-    },
-    {
-      path: '/cart',
-      element: <Cart />,
-    },
-    {
-      path: '/notifications',
-      element: <Notifications />,
-    },
-    {
-      path: '/negotiations',
-      element: <Negotiations />,
-    },
-    // Protected Routes
-    {
-      element: <ProtectedRoute isAuthenticated={isAuthenticated} />,
-      children: [
-        {
-          path: '/checkout',
-          element: <Checkout />,
-        },
-        {
-          path: '/account',
-          element: <BuyerAccount />,
-        },
-      ],
-    },
-    // Admin Protected Routes
-    {
-      element: (
-        <ProtectedRoute 
-          isAuthenticated={isAuthenticated} 
-          isAdmin={userRole === 'admin'} 
-          requiredAdmin={true} 
-        />
-      ),
-      children: [
-        {
-          path: '/admin',
-          element: <Admin />,
-        },
-      ],
-    },
-  ]);
-};
-
-// Exporting a static router for initial load, but it won't react to state changes well without RouterProvider update
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -117,17 +45,28 @@ export const router = createBrowserRouter([
     path: '/negotiations',
     element: <Negotiations />,
   },
+  // Protected Routes for Logged-In Users
   {
-    element: <ProtectedRoute isAuthenticated={false} />,
+    element: <ProtectedRoute />,
     children: [
-      { path: '/checkout', element: <Checkout /> },
-      { path: '/account', element: <BuyerAccount /> },
+      {
+        path: '/checkout',
+        element: <Checkout />,
+      },
+      {
+        path: '/account',
+        element: <BuyerAccount />,
+      },
     ],
   },
+  // Protected Routes for Admins Only
   {
-    element: <ProtectedRoute isAuthenticated={false} requiredAdmin={true} />,
+    element: <ProtectedRoute requiredAdmin={true} />,
     children: [
-      { path: '/admin', element: <Admin /> },
+      {
+        path: '/admin',
+        element: <Admin />,
+      },
     ],
   },
 ]);

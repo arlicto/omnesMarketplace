@@ -4,6 +4,11 @@ services:
       context: .
       dockerfile: docker/php/Dockerfile
     container_name: omnes_php
+    env_file:
+      - ./backend/config/env/.env.development
+      - ./backend/.env
+    environment:
+      APP_ENV: dev
     volumes:
       - ./backend:/var/www/backend
     networks:
@@ -27,11 +32,12 @@ services:
     image: mysql:8.0
     container_name: omnes_db
     restart: always
+    env_file:
+      - ./backend/.env
     environment:
       MYSQL_DATABASE: omnes_db
       MYSQL_ROOT_PASSWORD: root_password
       MYSQL_USER: omnes_user
-      MYSQL_PASSWORD: omnes_password
     ports:
       - "3307:3306"
     volumes:

@@ -1,10 +1,14 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Config\Database;
 use PDO;
 
-class DatabaseService {
+class DatabaseService
+{
     private static ?PDO $instance = null;
 
     /**
@@ -12,7 +16,8 @@ class DatabaseService {
      * 
      * @return PDO
      */
-    public static function getConnection(): PDO {
+    public static function getConnection(): PDO
+    {
         if (self::$instance === null) {
             $database = new Database();
             self::$instance = $database->getConnection();
@@ -23,5 +28,8 @@ class DatabaseService {
     /**
      * Private constructor to prevent direct instantiation.
      */
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 }
+
