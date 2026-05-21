@@ -1,40 +1,48 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '../components/Layout';
 import { ProductCard } from '../components/ProductCard';
 import { Button } from '../components/Button';
 import { Product } from '../types';
-
-const PRODUCTS: Product[] = [
-  {
-    id: '1',
-    name: 'Luxury Estate Collection',
-    price: 45000,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAqM3jZBzIQptwxmpb8FEWkJlgAGnmeuFvBk1H_hK95ULxuqDVYwhyRJ2JEvymzi3llosXtXbaP5YM560R_PI7kQKfdbxsztE3cIkGaa0xsWR4NJBQo_UB2rONeCZwQ3TyuhMUX8yg2mdVu2PDi9Yn0mv_oYZSF4Kyf6q0axgFSvUOWowiARyIDkQCAQGp46JIE6_QPyWcNxnd3jbuiDSx8YZTR5emWe41XyJ6kBqlOCvL4EgqkfryH1DKWxCPdjvQaqXdseDJASso',
-    category: 'Rare',
-    type: 'Buy Now',
-    tag: 'Rare'
-  },
-  {
-    id: '2',
-    name: 'Vintage Masterpiece Camera',
-    price: 12500,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDBFm2m6Opn8_fQhxcyMYPtX70IrKtF7z4xy7-W2O96VvWhCheZyUZLzVp83qc3KNvgk2g7YO5stybuBiI3L3hq1M6fP1trOgb9r_77qyv6Z2jyBaVChfYDXwLVYp9VmEC3Cc6GWBUAmBNY74j0hNaetkpON0lyKFtYFxFy70ipH3HFTC309KczGlea6pwD5ts7tTmnS5HzvtiVVTrkEk_r2Si913p1wbqgVcr6Jqbr9f_YTJXVuQsZwyQcLNBDh-EngP5Z7nuJ1hw',
-    category: 'High-end',
-    type: 'Negotiation',
-    tag: 'High-end'
-  },
-  {
-    id: '3',
-    name: 'Antique Scholar Desk',
-    price: 8900,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCDOUOq09YtmN8bdwD-5ElgaFQ7hCDsAr9MzYx-9GBSOvdIiFla_msxbpDFoYATHF0jZzEmRX2f_DcuSGFf6QxKcK5zXF5TeaNy4PORJysbWzuTSWQMRYb2URBHJo84YyZw94SiEkUbYYpi1gZ8CTZfFrj1nSZ_ou-29g52xMuRexwCunu0H0D7318atxDh0e9Ejmwnsng0HU_MPWvqkbo1EaeH7Lm884Se1s1vwu9_I1NkwAbExjCxC5hKpLs7y68IGa-Kc6AUeTQ',
-    category: 'Rare',
-    type: 'Best Offer',
-    tag: 'Rare'
-  }
-];
+import apiClient from '../services/apiClient';
 
 export const Browse: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'buy-now' | 'negotiable' | 'auction'>('buy-now');
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await apiClient.get('/products');
+        setProducts(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setProducts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const filteredProducts = products.filter(product => {
+    if (activeTab === 'buy-now') return product.type === 'Buy Now';
+    if (activeTab === 'negotiable') return product.type === 'Negotiation';
+    if (activeTab === 'auction') return product.type === 'Best Offer';
+    return true;
+  });
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[600px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <main className="max-w-container-max mx-auto px-margin-desktop py-stack-lg">
@@ -98,14 +106,14 @@ export const Browse: React.FC = () => {
 
         {/* Navigation Tabs */}
         <div className="flex border-b border-outline-variant mb-stack-lg overflow-x-auto hide-scrollbar">
-          <Tab active>Immediate Purchase</Tab>
-          <Tab>Seller–Buyer Negotiation</Tab>
-          <Tab>Best Offer / Auction</Tab>
+          <Tab active={activeTab === 'buy-now'} onClick={() => setActiveTab('buy-now')}>Buy It Now</Tab>
+          <Tab active={activeTab === 'negotiable'} onClick={() => setActiveTab('negotiable')}>Negotiable Prices</Tab>
+          <Tab active={activeTab === 'auction'} onClick={() => setActiveTab('auction')}>Auctioned Products</Tab>
         </div>
 
         {/* Product Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
-          {PRODUCTS.map(product => (
+          {filteredProducts.map(product => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
@@ -114,8 +122,11 @@ export const Browse: React.FC = () => {
   );
 };
 
-const Tab: React.FC<{ active?: boolean, children: React.ReactNode }> = ({ active, children }) => (
-  <button className={`px-6 py-4 border-b-2 ${active ? 'border-primary text-primary font-bold' : 'border-transparent text-on-surface-variant hover:text-primary font-medium'} text-label-md whitespace-nowrap transition-all`}>
+const Tab: React.FC<{ active?: boolean, children: React.ReactNode, onClick?: () => void }> = ({ active, children, onClick }) => (
+  <button 
+    onClick={onClick}
+    className={`px-6 py-4 border-b-2 ${active ? 'border-primary text-primary font-bold' : 'border-transparent text-on-surface-variant hover:text-primary font-medium'} text-label-md whitespace-nowrap transition-all`}
+  >
     {children}
   </button>
 );

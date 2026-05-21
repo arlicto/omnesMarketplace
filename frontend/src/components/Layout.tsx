@@ -16,14 +16,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-12">
             <div className="col-span-1 md:col-span-2 space-y-4">
-              <div className="flex items-center gap-3">
+              <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                 <img 
                   alt="Omnes MarketPlace Logo" 
                   className="h-8 w-auto grayscale" 
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaj3vHZb9tkC91jen03F2veXvobHo9ezqHF6qQdK8ryNbungIosTMi0YG7Gplu3fetQgz6iUdP0m79CxTU7e-HisF85uH7ZvKEQWTsWSAJBt-Ddz4SxM3kR67EXGjUIGpXFh2_LUHL8qa8Vgnpq6vWH-6i04ol12JzKV_eLbtQyuM-L9aTreBqzBxQr_iDxMLbXy-eAps7aFh0uQNuS4O5mdAqfy0KTVjgyKQMbmqB3zoSCL98I029TfPQ4Ck5kBnccDWceEZp2ws"
                 />
                 <span className="text-label-md font-bold text-primary tracking-widest uppercase">Omnes MarketPlace</span>
-              </div>
+              </a>
               <p className="text-body-md text-on-surface-variant max-w-sm">
                 The premier marketplace for the Omnes Education community. Empowering students and faculty through a professional trading platform.
               </p>
