@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import apiClient from '../services/apiClient';
 import { useAuthStore } from '../store/authStore';
@@ -31,6 +32,7 @@ const ROLE_FILTERS = [
 ] as const;
 
 export const Admin: React.FC = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,6 +69,36 @@ export const Admin: React.FC = () => {
     loadData(value);
   };
 
+  const handleBan = async (userId: number) => {
+    if (!confirm(`Ban user #${userId}?`)) return;
+    try {
+      await apiClient.post(`/admin/users/${userId}/ban`);
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, status: 'suspended' } : u));
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to ban user.');
+    }
+  };
+
+  const handleUnban = async (userId: number) => {
+    try {
+      await apiClient.post(`/admin/users/${userId}/unban`);
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, status: 'active' } : u));
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to unban user.');
+    }
+  };
+
+  const handleExport = () => {
+    const csv = [
+      'ID,Username,Email,Roles,Status,Joined',
+      ...users.map(u => `${u.id},${u.username},${u.email},"${(u.roles || []).join(',')}",${u.status},${u.created_at}`),
+    ].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'users_export.csv'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Layout>
       <div className="flex h-[calc(100vh-73px)] w-full overflow-hidden">
@@ -81,12 +113,12 @@ export const Admin: React.FC = () => {
             <div className="text-[11px] font-label-md text-on-surface-variant mt-1">Admin Control Center</div>
           </div>
           <nav className="space-y-1">
-            <AdminSidebarLink icon="dashboard" label="Dashboard" active />
-            <AdminSidebarLink icon="storefront" label="Sellers" />
-            <AdminSidebarLink icon="group" label="Buyers" />
-            <AdminSidebarLink icon="list_alt" label="Listings" />
-            <AdminSidebarLink icon="payments" label="Transactions" />
-            <AdminSidebarLink icon="settings" label="Settings" />
+            <AdminSidebarLink icon="dashboard" label="Dashboard" active onClick={() => {}} />
+            <AdminSidebarLink icon="storefront" label="Sellers" onClick={() => handleFilterChange('seller')} />
+            <AdminSidebarLink icon="group" label="Buyers" onClick={() => handleFilterChange('buyer')} />
+            <AdminSidebarLink icon="list_alt" label="Listings" onClick={() => alert('Coming soon')} />
+            <AdminSidebarLink icon="payments" label="Transactions" onClick={() => alert('Coming soon')} />
+            <AdminSidebarLink icon="settings" label="Settings" onClick={() => alert('Coming soon')} />
           </nav>
         </aside>
 
@@ -97,7 +129,7 @@ export const Admin: React.FC = () => {
               <p className="text-body-md text-on-surface-variant">Real-time overview of the marketplace ecosystem.</p>
             </div>
             <div className="flex gap-4">
-              <button className="flex items-center gap-2 px-4 py-2 bg-white border border-outline-variant rounded-lg text-label-md font-bold text-on-surface-variant hover:bg-surface-container transition-all">
+              <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2 bg-white border border-outline-variant rounded-lg text-label-md font-bold text-on-surface-variant hover:bg-surface-container transition-all">
                 <span className="material-symbols-outlined">download</span> Export Report
               </button>
             </div>
@@ -173,6 +205,7 @@ export const Admin: React.FC = () => {
                       <th className="px-6 py-4 font-bold">Role</th>
                       <th className="px-6 py-4 font-bold">Status</th>
                       <th className="px-6 py-4 font-bold">Joined</th>
+                      <th className="px-6 py-4 font-bold">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-outline-variant text-body-md">
@@ -208,6 +241,13 @@ export const Admin: React.FC = () => {
                         <td className="px-6 py-4 text-on-surface-variant">
                           {new Date(u.created_at).toLocaleDateString()}
                         </td>
+                        <td className="px-6 py-4 flex gap-2">
+                          {u.status === 'active' ? (
+                            <button onClick={() => handleBan(u.id)} className="text-error text-label-sm font-bold hover:underline">Ban</button>
+                          ) : (
+                            <button onClick={() => handleUnban(u.id)} className="text-secondary text-label-sm font-bold hover:underline">Unban</button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -221,10 +261,13 @@ export const Admin: React.FC = () => {
   );
 };
 
-const AdminSidebarLink: React.FC<{ icon: string, label: string, active?: boolean }> = ({ icon, label, active }) => (
-  <a className={`flex items-center space-x-3 p-3 rounded-lg transition-all font-label-md ${
-    active ? 'bg-primary-container text-on-primary-container font-bold' : 'text-on-surface-variant hover:bg-surface-variant'
-  }`} href="#">
+const AdminSidebarLink: React.FC<{ icon: string, label: string, active?: boolean, onClick?: () => void }> = ({ icon, label, active, onClick }) => (
+  <a
+    className={`flex items-center space-x-3 p-3 rounded-lg transition-all font-label-md cursor-pointer ${
+      active ? 'bg-primary-container text-on-primary-container font-bold' : 'text-on-surface-variant hover:bg-surface-variant'
+    }`}
+    onClick={(e) => { e.preventDefault(); onClick?.(); }}
+  >
     <span className="material-symbols-outlined">{icon}</span>
     <span>{label}</span>
   </a>
