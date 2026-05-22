@@ -27,9 +27,10 @@ final class AdminMiddleware implements MiddlewareInterface
             return JsonResponse::error('Authentication required.', 401);
         }
 
-        $role = $user['role'] ?? 'buyer';
+        $roles = $user['roles'] ?? [];
+        $isAdmin = !empty(array_intersect($roles, self::ALLOWED_ROLES));
 
-        if (!in_array($role, self::ALLOWED_ROLES, true)) {
+        if (!$isAdmin) {
             $ip = $request->getServerParams()['REMOTE_ADDR'] ?? 'unknown';
             SecurityMonitor::logSuspiciousInput((string) ($user['id'] ?? '0'), 'admin_access_denied', $ip);
             
@@ -37,7 +38,7 @@ final class AdminMiddleware implements MiddlewareInterface
         }
 
         // Add admin role to request attributes for downstream use
-        $request = $request->withAttribute('admin_role', $role);
+        $request = $request->withAttribute('admin_role', $roles);
         return $handler->handle($request);
     }
 }

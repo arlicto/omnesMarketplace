@@ -67,7 +67,11 @@ final class AuthService
             'last_name' => $data['last_name'] ?? null,
         ]);
 
-        $this->users->assignRole($userId, 'buyer');
+        $role = match ($data['role'] ?? 'buyer') {
+            'seller' => 'seller',
+            default => 'buyer',
+        };
+        $this->users->assignRole($userId, $role);
         $this->sendEmailVerification($userId, $email);
 
         $user = $this->users->findById($userId);

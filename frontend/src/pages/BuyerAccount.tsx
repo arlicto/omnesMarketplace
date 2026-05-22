@@ -1,7 +1,17 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
+import { useAuthStore } from '../store/authStore';
 
 export const BuyerAccount: React.FC = () => {
+  const navigate = useNavigate();
+  const { logout } = useAuthStore();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <Layout>
       <main className="max-w-container-max mx-auto px-margin-desktop py-stack-lg flex flex-col md:flex-row gap-gutter">
@@ -27,7 +37,7 @@ export const BuyerAccount: React.FC = () => {
               <SidebarLink icon="favorite" label="Watchlist" />
               <SidebarLink icon="settings" label="Settings" />
               <div className="pt-4 mt-4 border-t border-outline-variant">
-                <SidebarLink icon="logout" label="Logout" variant="error" />
+                <SidebarLink icon="logout" label="Logout" variant="error" onClick={handleLogout} />
               </div>
             </nav>
           </div>
@@ -86,16 +96,25 @@ export const BuyerAccount: React.FC = () => {
   );
 };
 
-const SidebarLink: React.FC<{ icon: string, label: string, active?: boolean, variant?: 'default' | 'error' }> = ({ 
-  icon, label, active, variant = 'default' 
+const SidebarLink: React.FC<{ icon: string, label: string, active?: boolean, variant?: 'default' | 'error', onClick?: () => void }> = ({ 
+  icon, label, active, variant = 'default', onClick 
 }) => (
-  <a className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-    active 
-      ? 'bg-primary-container text-on-primary-container font-bold scale-95' 
-      : variant === 'error' 
-        ? 'text-error hover:bg-error-container/10' 
-        : 'text-on-surface-variant hover:bg-surface-variant'
-  }`} href="#">
+  <a 
+    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+      active 
+        ? 'bg-primary-container text-on-primary-container font-bold scale-95' 
+        : variant === 'error' 
+          ? 'text-error hover:bg-error-container/10' 
+          : 'text-on-surface-variant hover:bg-surface-variant'
+    }`} 
+    href={onClick ? '#' : undefined}
+    onClick={(e) => {
+      if (onClick) {
+        e.preventDefault();
+        onClick();
+      }
+    }}
+  >
     <span className="material-symbols-outlined">{icon}</span>
     <span className="text-label-md">{label}</span>
   </a>

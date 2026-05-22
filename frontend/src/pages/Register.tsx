@@ -13,6 +13,8 @@ export const Register: React.FC = () => {
   const [role, setRole] = useState<'buyer' | 'seller'>(searchParams.get('role') === 'seller' ? 'seller' : 'buyer');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const navigate = useNavigate();
 
@@ -162,24 +164,48 @@ export const Register: React.FC = () => {
               
               {/* Password Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Input 
-                  label="Password" 
-                  id="password" 
-                  type="password" 
-                  placeholder="••••••••" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <Input 
-                  label="Confirm Password" 
-                  id="confirm_password" 
-                  type="password" 
-                  placeholder="••••••••" 
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
+                <div className="relative">
+                  <Input 
+                    label="Password" 
+                    id="password" 
+                    type={showPassword ? 'text' : 'password'} 
+                    placeholder="••••••••" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-9 text-on-surface-variant hover:text-primary transition-colors"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    <span className="material-symbols-outlined">
+                      {showPassword ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
+                <div className="relative">
+                  <Input 
+                    label="Confirm Password" 
+                    id="confirm_password" 
+                    type={showConfirmPassword ? 'text' : 'password'} 
+                    placeholder="••••••••" 
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-9 text-on-surface-variant hover:text-primary transition-colors"
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    <span className="material-symbols-outlined">
+                      {showConfirmPassword ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
               </div>
               
               {/* Agreement Checkbox */}

@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
 
 export const Header: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const user = useAuthStore((state) => state.user);
   const [showSearch, setShowSearch] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -70,7 +72,7 @@ export const Header: React.FC = () => {
           </button>
           <button 
             className="material-symbols-outlined p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-full transition-all"
-            onClick={() => navigate('/account')}
+            onClick={() => navigate(user?.roles?.includes('admin') ? '/admin' : '/account')}
             aria-label="Account"
           >
             account_circle

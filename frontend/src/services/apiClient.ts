@@ -16,19 +16,32 @@ function getCsrfToken(): string | null {
 
 apiClient.interceptors.request.use(
   (config) => {
-    const token = useAuthStore.getState().token;
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
     const csrf = getCsrfToken();
     if (csrf && config.method && !['get', 'head', 'options'].includes(config.method.toLowerCase())) {
       config.headers['X-CSRF-Token'] = csrf;
     }
-
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401 && !error.config._retry) {
+      error.config._retry = true;
+      try {
+        const { data } = await apiClient.post('/auth/refresh');
+        useAuthStore.getState().setAuth(data.user, data.access_token);
+        error.config.headers.Authorization = `Bearer ${data.access_token}`;
+        return apiClient(error.config);
+      } catch {
+        useAuthStore.getState().logout();
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
 );
 
 export default apiClient;

@@ -10,9 +10,11 @@ use App\Controllers\V1\Admin\AdminOrderController;
 use App\Controllers\V1\Admin\AdminProductController;
 use App\Controllers\V1\Admin\AdminUserController;
 use App\Controllers\V1\AuthController;
+use App\Controllers\V1\CartController;
 use App\Controllers\V1\ImageUploadController;
 use App\Controllers\V1\NegotiationController;
 use App\Controllers\V1\NotificationController;
+use App\Controllers\V1\OrderController;
 use App\Controllers\V1\ProductController;
 use App\Controllers\V1\UploadController;
 use App\Middleware\AdminMiddleware;
@@ -137,6 +139,23 @@ return function (App $app) {
                 ->add(CsrfMiddleware::class);
         });
 
+        // Protected cart routes
+        $group->get('/cart', CartController::class . ':getCart')
+            ->add(AuthMiddleware::class);
+
+        $group->post('/cart/items', CartController::class . ':addItem')
+            ->add(AuthMiddleware::class)
+            ->add(CsrfMiddleware::class);
+
+        $group->delete('/cart/items/{id}', CartController::class . ':removeItem')
+            ->add(AuthMiddleware::class)
+            ->add(CsrfMiddleware::class);
+
+        // Protected order routes
+        $group->post('/orders', OrderController::class . ':create')
+            ->add(AuthMiddleware::class)
+            ->add(CsrfMiddleware::class);
+
         // Protected upload routes
         $group->post('/upload', UploadController::class . ':upload')
             ->add(AuthMiddleware::class)
@@ -199,6 +218,6 @@ return function (App $app) {
             $adminGroup->get('/analytics/overview', AdminAnalyticsController::class . ':getOverview');
             $adminGroup->get('/analytics/users/trends', AdminAnalyticsController::class . ':getUserTrends');
             $adminGroup->get('/analytics/sales/trends', AdminAnalyticsController::class . ':getSalesTrends');
-        })->add(AuthMiddleware::class)->add(AdminMiddleware::class);
+        })->add(AdminMiddleware::class)->add(AuthMiddleware::class);
     });
 };

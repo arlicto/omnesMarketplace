@@ -44,7 +44,10 @@ final class AdminAnalyticsController
             $stats = [
                 'users' => [
                     'total' => $this->users->count(),
-                    'active' => $this->users->count(null, null, 'active'),
+                    'active' => $this->users->countByRole('buyer') + $this->users->countByRole('seller'),
+                    'buyers' => $this->users->countByRole('buyer'),
+                    'sellers' => $this->users->countByRole('seller'),
+                    'admins' => $this->users->countByRole('admin'),
                     'banned' => $this->users->count(null, null, 'banned'),
                 ],
                 'products' => [
@@ -67,7 +70,7 @@ final class AdminAnalyticsController
                     'rejected' => $this->negotiations->count('rejected'),
                 ],
                 'revenue' => $this->getRevenueStats(),
-                'recent_activity' => $this->auditLogs->findAll(10, 0),
+                'recent_activity' => $this->getRecentActivity(),
             ];
 
             return JsonResponse::make([
@@ -76,6 +79,16 @@ final class AdminAnalyticsController
 
         } catch (RuntimeException $e) {
             return JsonResponse::error($e->getMessage(), 500);
+        }
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function getRecentActivity(): array
+    {
+        try {
+            return $this->auditLogs->findAll(10, 0);
+        } catch (\Exception) {
+            return [];
         }
     }
 
@@ -89,9 +102,9 @@ final class AdminAnalyticsController
         $stmt = $this->db->prepare(
             'SELECT 
                 COUNT(*) as total_orders,
-                SUM(final_price) as total_revenue,
-                AVG(final_price) as avg_order_value,
-                SUM(CASE WHEN status = "delivered" THEN final_price ELSE 0 END) as delivered_revenue
+                SUM(total_amount) as total_revenue,
+                AVG(total_amount) as avg_order_value,
+                SUM(CASE WHEN status = "delivered" THEN total_amount ELSE 0 END) as delivered_revenue
              FROM orders
              WHERE deleted_at IS NULL'
         );
@@ -162,7 +175,7 @@ final class AdminAnalyticsController
                 'SELECT 
                     DATE(created_at) as date,
                     COUNT(*) as orders,
-                    SUM(final_price) as revenue
+                    SUM(total_amount) as revenue
                  FROM orders
                  WHERE deleted_at IS NULL
                  AND created_at >= DATE_SUB(NOW(), INTERVAL :days DAY)

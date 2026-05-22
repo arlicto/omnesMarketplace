@@ -39,19 +39,22 @@ final class AdminUserController
         $pagination = Pagination::fromQuery($queryParams);
         $searchFilter = SearchFilter::fromQuery($queryParams, ['id', 'username', 'email', 'created_at']);
 
+        $roleFilter = $searchFilter->getFilter('role') ?? $queryParams['role'] ?? null;
+        $statusFilter = $searchFilter->getFilter('status') ?? $queryParams['status'] ?? null;
+
         try {
             $users = $this->users->findAll(
                 $pagination->getLimit(),
                 $pagination->getOffset(),
                 $searchFilter->getSearch(),
-                $searchFilter->getFilter('role'),
-                $searchFilter->getFilter('status')
+                $roleFilter,
+                $statusFilter
             );
 
             $total = $this->users->count(
                 $searchFilter->getSearch(),
-                $searchFilter->getFilter('role'),
-                $searchFilter->getFilter('status')
+                $roleFilter,
+                $statusFilter
             );
 
             $pagination = Pagination::withTotal(
@@ -118,7 +121,7 @@ final class AdminUserController
                 return JsonResponse::error('User not found.', 404);
             }
 
-            $oldRole = $user['role'];
+            $oldRoles = $this->users->getRoleSlugs($userId);
             $updated = $this->users->updateRole($userId, $role);
 
             if (!$updated) {
@@ -132,8 +135,8 @@ final class AdminUserController
                 (int) $admin['id'],
                 'role_updated',
                 $userId,
-                ['role' => $oldRole],
-                ['role' => $role],
+                ['roles' => $oldRoles],
+                ['roles' => [$role]],
                 $ip,
                 $userAgent
             );

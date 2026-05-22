@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../services/apiClient';
 import { Input } from '../components/Input';
@@ -10,9 +10,18 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
+
+  useEffect(() => {
+    const savedRememberMe = localStorage.getItem('rememberMe');
+    if (savedRememberMe === 'true') {
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,11 +32,27 @@ export const Login: React.FC = () => {
       const response = await apiClient.post('/auth/login', {
         email,
         password,
+        remember_me: rememberMe,
       });
 
       const { user, access_token, jwt } = response.data;
       setAuth(user, access_token || jwt);
-      navigate('/');
+      
+      // Store remember me preference
+      if (rememberMe) {
+        localStorage.setItem('rememberMe', 'true');
+      } else {
+        localStorage.removeItem('rememberMe');
+      }
+      
+      // Redirect based on user role
+      if (user.roles?.includes('admin')) {
+        navigate('/admin');
+      } else if (user.roles?.includes('seller')) {
+        navigate('/account');
+      } else {
+        navigate('/');
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -74,21 +99,38 @@ export const Login: React.FC = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-            <Input 
-              label="Password" 
-              icon="lock" 
-              type="password" 
-              id="password" 
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="relative">
+              <Input 
+                label="Password" 
+                icon="lock" 
+                type={showPassword ? 'text' : 'password'} 
+                id="password" 
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-9 text-on-surface-variant hover:text-primary transition-colors"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                <span className="material-symbols-outlined">
+                  {showPassword ? 'visibility_off' : 'visibility'}
+                </span>
+              </button>
+            </div>
 
             <div className="flex justify-between items-center py-2">
               <label className="flex items-center gap-2 cursor-pointer group">
                 <div className="relative flex items-center">
-                  <input className="peer appearance-none w-5 h-5 rounded border-2 border-outline-variant checked:bg-primary checked:border-primary transition-all" type="checkbox"/>
+                  <input 
+                    className="peer appearance-none w-5 h-5 rounded border-2 border-outline-variant checked:bg-primary checked:border-primary transition-all" 
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
                   <span className="material-symbols-outlined absolute text-white opacity-0 peer-checked:opacity-100 left-1/2 -translate-x-1/2" style={{ fontSize: '16px' }}>check</span>
                 </div>
                 <span className="font-label-md text-label-md text-on-surface-variant group-hover:text-primary transition-colors">Remember me</span>

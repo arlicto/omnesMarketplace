@@ -35,19 +35,41 @@ final class OrderRepository
     public function create(array $data): int
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO orders (uuid, negotiation_id, product_id, buyer_id, seller_id, final_price, status, shipping_address, notes)
-             VALUES (:uuid, :negotiation_id, :product_id, :buyer_id, :seller_id, :final_price, :status, :shipping_address, :notes)'
+            'INSERT INTO orders (uuid, order_number, buyer_id, status, subtotal, tax_amount, shipping_amount, total_amount, currency, shipping_address, notes)
+             VALUES (:uuid, :order_number, :buyer_id, :status, :subtotal, :tax_amount, :shipping_amount, :total_amount, :currency, :shipping_address, :notes)'
         );
         $stmt->execute([
             'uuid' => $data['uuid'],
-            'negotiation_id' => $data['negotiation_id'] ?? null,
-            'product_id' => $data['product_id'],
+            'order_number' => $data['order_number'] ?? bin2hex(random_bytes(8)),
             'buyer_id' => $data['buyer_id'],
-            'seller_id' => $data['seller_id'],
-            'final_price' => $data['final_price'],
             'status' => $data['status'] ?? 'pending',
+            'subtotal' => $data['subtotal'] ?? 0,
+            'tax_amount' => $data['tax_amount'] ?? 0,
+            'shipping_amount' => $data['shipping_amount'] ?? 0,
+            'total_amount' => $data['total_amount'] ?? 0,
+            'currency' => $data['currency'] ?? 'USD',
             'shipping_address' => $data['shipping_address'] ?? null,
             'notes' => $data['notes'] ?? null,
+        ]);
+
+        return (int) $this->db->lastInsertId();
+    }
+
+    public function createOrderItem(array $data): int
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO order_items (order_id, product_id, seller_id, product_name, product_slug, quantity, unit_price, line_total)
+             VALUES (:order_id, :product_id, :seller_id, :product_name, :product_slug, :quantity, :unit_price, :line_total)'
+        );
+        $stmt->execute([
+            'order_id' => $data['order_id'],
+            'product_id' => $data['product_id'],
+            'seller_id' => $data['seller_id'],
+            'product_name' => $data['product_name'],
+            'product_slug' => $data['product_slug'],
+            'quantity' => $data['quantity'],
+            'unit_price' => $data['unit_price'],
+            'line_total' => $data['line_total'],
         ]);
 
         return (int) $this->db->lastInsertId();

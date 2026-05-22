@@ -1,9 +1,19 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
+import { useAuthStore } from '../store/authStore';
 
 export const SellerAccount: React.FC = () => {
+  const navigate = useNavigate();
+  const { logout } = useAuthStore();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <Layout>
       <main className="flex min-h-[calc(100vh-140px)] max-w-container-max mx-auto">
@@ -24,6 +34,9 @@ export const SellerAccount: React.FC = () => {
             <SidebarLink icon="handshake" label="Negotiations" />
             <SidebarLink icon="list_alt" label="Add Listing" active />
             <SidebarLink icon="settings" label="Settings" />
+            <div className="pt-4 mt-4 border-t border-outline-variant">
+              <SidebarLink icon="logout" label="Logout" variant="error" onClick={handleLogout} />
+            </div>
           </nav>
         </aside>
 
@@ -112,10 +125,25 @@ export const SellerAccount: React.FC = () => {
   );
 };
 
-const SidebarLink: React.FC<{ icon: string, label: string, active?: boolean }> = ({ icon, label, active }) => (
-  <a className={`flex items-center space-x-3 p-3 rounded-lg transition-all font-label-md ${
-    active ? 'bg-primary-container text-on-primary-container font-bold' : 'text-on-surface-variant hover:bg-surface-variant'
-  }`} href="#">
+const SidebarLink: React.FC<{ icon: string, label: string, active?: boolean, variant?: 'default' | 'error', onClick?: () => void }> = ({ 
+  icon, label, active, variant = 'default', onClick 
+}) => (
+  <a 
+    className={`flex items-center space-x-3 p-3 rounded-lg transition-all font-label-md ${
+      active 
+        ? 'bg-primary-container text-on-primary-container font-bold' 
+        : variant === 'error' 
+          ? 'text-error hover:bg-error-container/10' 
+          : 'text-on-surface-variant hover:bg-surface-variant'
+    }`} 
+    href={onClick ? '#' : undefined}
+    onClick={(e) => {
+      if (onClick) {
+        e.preventDefault();
+        onClick();
+      }
+    }}
+  >
     <span className="material-symbols-outlined">{icon}</span>
     <span>{label}</span>
   </a>

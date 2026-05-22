@@ -6,6 +6,7 @@ use App\Config\Config;
 use App\Config\EnvLoader;
 use App\Services\LogMailer;
 use App\Services\MailerInterface;
+use App\Services\JwtService;
 use Slim\Factory\AppFactory;
 use App\Core\Container;
 
@@ -17,6 +18,10 @@ $container = new Container();
 
 $container->set(PDO::class, function () {
     return \App\Services\DatabaseService::getConnection();
+});
+
+$container->set(JwtService::class, function () {
+    return JwtService::fromConfig();
 });
 
 $container->set(MailerInterface::class, function () {

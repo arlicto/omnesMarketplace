@@ -6,6 +6,26 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- Drop existing tables if they exist
+DROP TABLE IF EXISTS admin_logs;
+DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS notifications;
+DROP TABLE IF EXISTS negotiations;
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS cart_items;
+DROP TABLE IF EXISTS carts;
+DROP TABLE IF EXISTS product_images;
+DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS user_roles;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS roles;
+DROP TABLE IF EXISTS login_attempts;
+DROP TABLE IF EXISTS auth_tokens;
+DROP TABLE IF EXISTS refresh_tokens;
+DROP TABLE IF EXISTS schema_migrations;
+
 -- -----------------------------------------------------------------------------
 -- Roles & users
 -- -----------------------------------------------------------------------------
@@ -279,8 +299,7 @@ CREATE TABLE IF NOT EXISTS negotiations (
     CONSTRAINT fk_negotiations_seller FOREIGN KEY (seller_id) REFERENCES users (id)
         ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT chk_negotiations_offered_price CHECK (offered_price >= 0),
-    CONSTRAINT chk_negotiations_counter_price CHECK (counter_price IS NULL OR counter_price >= 0),
-    CONSTRAINT chk_negotiations_parties CHECK (buyer_id <> seller_id)
+    CONSTRAINT chk_negotiations_counter_price CHECK (counter_price IS NULL OR counter_price >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------------------------------

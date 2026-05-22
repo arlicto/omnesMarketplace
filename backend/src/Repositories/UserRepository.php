@@ -184,8 +184,9 @@ final class UserRepository
     /** @return list<array<string, mixed>> */
     public function findAll(?int $limit = null, ?int $offset = null, ?string $search = null, ?string $role = null, ?string $status = null): array
     {
-        $sql = 'SELECT u.id, u.uuid, u.username, u.email, u.status, u.role, u.email_verified_at,
-                u.first_name, u.last_name, u.created_at, u.updated_at
+        $sql = 'SELECT u.id, u.uuid, u.username, u.email, u.status, u.email_verified_at,
+                u.first_name, u.last_name, u.created_at, u.updated_at,
+                (SELECT GROUP_CONCAT(r.slug) FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = u.id) as roles
                 FROM users u
                 WHERE u.deleted_at IS NULL';
         
@@ -197,7 +198,7 @@ final class UserRepository
         }
 
         if ($role !== null) {
-            $sql .= ' AND u.role = :role';
+            $sql .= ' AND EXISTS (SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = u.id AND r.slug = :role)';
             $params['role'] = $role;
         }
 
@@ -226,7 +227,14 @@ final class UserRepository
         
         $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        foreach ($results as &$row) {
+            $row['roles'] = isset($row['roles']) && $row['roles'] !== '' ? explode(',', $row['roles']) : [];
+        }
+        unset($row);
+
+        return $results;
     }
 
     public function count(?string $search = null, ?string $role = null, ?string $status = null): int
@@ -240,7 +248,7 @@ final class UserRepository
         }
 
         if ($role !== null) {
-            $sql .= ' AND role = :role';
+            $sql .= ' AND EXISTS (SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = users.id AND r.slug = :role)';
             $params['role'] = $role;
         }
 
@@ -255,12 +263,27 @@ final class UserRepository
         return (int) $stmt->fetchColumn();
     }
 
-    public function updateRole(int $userId, string $role): bool
+    public function countByRole(string $roleSlug): int
     {
         $stmt = $this->db->prepare(
-            'UPDATE users SET role = :role, updated_at = CURRENT_TIMESTAMP WHERE id = :id AND deleted_at IS NULL'
+            'SELECT COUNT(*) FROM user_roles ur
+             JOIN roles r ON r.id = ur.role_id
+             JOIN users u ON u.id = ur.user_id
+             WHERE r.slug = :slug AND u.deleted_at IS NULL'
         );
-        $stmt->execute(['id' => $userId, 'role' => $role]);
+        $stmt->execute(['slug' => $roleSlug]);
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function updateRole(int $userId, string $roleSlug): bool
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO user_roles (user_id, role_id)
+             SELECT :user_id, r.id FROM roles r WHERE r.slug = :slug
+             ON DUPLICATE KEY UPDATE assigned_at = CURRENT_TIMESTAMP'
+        );
+        $stmt->execute(['user_id' => $userId, 'slug' => $roleSlug]);
 
         return $stmt->rowCount() > 0;
     }
