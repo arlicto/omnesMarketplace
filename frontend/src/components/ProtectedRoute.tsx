@@ -12,7 +12,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   redirectTo = '/login',
 }) => {
   const { isAuthenticated, user } = useAuthStore();
-  const isAdmin = user?.roles?.includes('admin');
+  const isAdmin = user?.roles?.some(r => ['admin', 'super_admin'].includes(r));
 
   if (!isAuthenticated) {
     return <Navigate to={redirectTo} replace />;

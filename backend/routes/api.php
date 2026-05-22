@@ -72,6 +72,8 @@ return function (App $app) {
             // Protected auth endpoints
             $auth->get('/me', AuthController::class . ':me')
                 ->add(AuthMiddleware::class);
+            $auth->post('/refresh', AuthController::class . ':refresh');
+
             $auth->post('/logout', AuthController::class . ':logout')
                 ->add(AuthMiddleware::class)
                 ->add(CsrfMiddleware::class);
@@ -129,10 +131,12 @@ return function (App $app) {
                 ->add(AuthMiddleware::class);
             
             $notificationGroup->post('/{id}/read', NotificationController::class . ':markAsRead')
-                ->add(AuthMiddleware::class);
+                ->add(AuthMiddleware::class)
+                ->add(CsrfMiddleware::class);
             
             $notificationGroup->post('/read-all', NotificationController::class . ':markAllAsRead')
-                ->add(AuthMiddleware::class);
+                ->add(AuthMiddleware::class)
+                ->add(CsrfMiddleware::class);
             
             $notificationGroup->delete('/{id}', NotificationController::class . ':delete')
                 ->add(AuthMiddleware::class)

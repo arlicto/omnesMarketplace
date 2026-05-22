@@ -13,6 +13,7 @@ use App\Repositories\RefreshTokenRepository;
 use App\Repositories\UserRepository;
 use App\Security\PasswordHasher;
 use App\Security\TokenGenerator;
+use App\Support\Uuid;
 use PDO;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -249,6 +250,36 @@ final class AuthService
         return ['message' => 'Email verified successfully.'];
     }
 
+    public function refresh(Request $request, Response $response): Response
+    {
+        $refresh = $request->getCookieParams()[AuthCookieManager::REFRESH_COOKIE] ?? null;
+
+        if (!is_string($refresh) || $refresh === '') {
+            throw new AuthException('No refresh token provided.', 401);
+        }
+
+        $auth = Config::get()->auth();
+        $hash = TokenGenerator::hash($refresh, $auth->tokenPepper);
+        $record = $this->refreshTokens->findValid($hash);
+
+        if ($record === null) {
+            throw new AuthException('Invalid or expired refresh token.', 401);
+        }
+
+        $this->refreshTokens->revoke($hash);
+
+        $userId = (int) $record['user_id'];
+        $user = $this->users->findById($userId);
+
+        if ($user === null) {
+            throw new AuthException('User not found.', 401);
+        }
+
+        $user['token_version'] = $this->users->getTokenVersion($userId);
+
+        return $this->issueAuthResponse($response, $user, 200, 'Token refreshed.');
+    }
+
     public function me(int $userId): array
     {
         $user = $this->users->findById($userId);
@@ -342,10 +373,6 @@ final class AuthService
 
     private function generateUuid(): string
     {
-        $data = random_bytes(16);
-        $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
-        $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
-
-        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+        return Uuid::v4();
     }
 }

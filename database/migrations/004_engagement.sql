@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS negotiations (
     product_id      BIGINT UNSIGNED  NOT NULL,
     buyer_id        BIGINT UNSIGNED  NOT NULL,
     seller_id       BIGINT UNSIGNED  NOT NULL,
-    status          ENUM('open', 'accepted', 'rejected', 'cancelled', 'expired') NOT NULL DEFAULT 'open',
+    status          ENUM('open', 'pending', 'countered', 'accepted', 'rejected', 'cancelled', 'expired') NOT NULL DEFAULT 'open',
     offered_price   DECIMAL(12, 2)   NOT NULL,
     counter_price   DECIMAL(12, 2)   NULL,
     message         TEXT             NULL,

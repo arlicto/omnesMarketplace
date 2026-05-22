@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS products (
     stock         INT UNSIGNED     NOT NULL DEFAULT 0,
     status        ENUM('draft', 'active', 'sold', 'archived') NOT NULL DEFAULT 'draft',
     currency      CHAR(3)          NOT NULL DEFAULT 'USD',
+    image_url     VARCHAR(512)     NULL,
+    thumbnail_url VARCHAR(512)     NULL,
     created_at    TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at    TIMESTAMP        NULL DEFAULT NULL,

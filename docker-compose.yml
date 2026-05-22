@@ -43,9 +43,9 @@ services:
       - ./backend/.env
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-omnes_db}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_password}
-      MYSQL_USER: ${DB_USERNAME:-omnes_user}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-omnes_password}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD is required}
+      MYSQL_USER: ${DB_USERNAME:?DB_USERNAME is required}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
     ports:
       - "${DB_PORT:-3307}:3306"
     volumes:

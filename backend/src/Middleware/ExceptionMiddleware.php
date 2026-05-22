@@ -32,6 +32,9 @@ class ExceptionMiddleware implements MiddlewareInterface
 
         if ($exception instanceof HttpException) {
             $statusCode = $exception->getCode();
+            if ($statusCode < 100 || $statusCode > 599) {
+                $statusCode = 500;
+            }
             $message = SecretSanitizer::redact($exception->getMessage());
         } elseif ($exception instanceof \PDOException) {
             $message = 'Database Error';

@@ -107,11 +107,11 @@ export const ProductDetail: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-gutter mb-stack-lg">
           <section className="space-y-4">
             <div className="aspect-square rounded-2xl overflow-hidden bg-surface-container border border-outline-variant shadow-sm flex items-center justify-center">
-              {product.image_url || product.image ? (
+              {product.image_url ? (
                 <img
                   alt={product.name}
                   className="w-full h-full object-cover"
-                  src={product.image_url || product.image}
+                  src={product.image_url}
                 />
               ) : (
                 <span className="material-symbols-outlined text-6xl text-on-surface-variant/30">image</span>
@@ -161,7 +161,7 @@ export const ProductDetail: React.FC = () => {
                 <ul className="grid grid-cols-2 gap-4 text-body-md">
                   <li><span className="text-on-surface-variant">Product ID:</span> {product.id}</li>
                   <li><span className="text-on-surface-variant">Category:</span> {product.category || 'General'}</li>
-                  <li><span className="text-on-surface-variant">Type:</span> {product.type || 'Buy Now'}</li>
+                  <li><span className="text-on-surface-variant">Type:</span> Buy Now</li>
                   <li><span className="text-on-surface-variant">Price:</span> ${Number(product.price).toLocaleString()}</li>
                 </ul>
               </CollapsibleSection>

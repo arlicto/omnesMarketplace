@@ -18,11 +18,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <a href={`/product/${product.id}`} className="block min-w-[280px] md:min-w-[320px] bg-white rounded-xl shadow-sm border border-outline-variant overflow-hidden group">
       <div className="h-48 overflow-hidden relative flex items-center justify-center bg-surface-container">
-        {product.image || product.image_url ? (
+        {product.image_url ? (
           <img
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            src={product.image || product.image_url || ''}
+            src={product.image_url}
           />
         ) : (
           <span className="material-symbols-outlined text-4xl text-on-surface-variant/30">image</span>
@@ -34,12 +34,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         )}
       </div>
       <div className="p-stack-md space-y-2">
-        <span className={`text-label-sm font-label-sm px-2 py-0.5 rounded ${
-          product.type === 'Buy Now' ? 'text-secondary bg-secondary-fixed/20' : 
-          product.type === 'Negotiation' ? 'text-primary bg-primary-fixed/20' : 
-          'text-tertiary bg-tertiary-fixed/20'
-        }`}>
-          {product.type}
+        <span className="text-label-sm font-label-sm px-2 py-0.5 rounded text-secondary bg-secondary-fixed/20">
+          Buy Now
         </span>
         <h3 className="text-headline-sm font-headline-md text-primary">{product.name}</h3>
         <div className="flex justify-between items-center">

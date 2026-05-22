@@ -4,7 +4,6 @@ export interface Product {
   price: number;
   image: string | null;
   category: string;
-  type: 'Buy Now' | 'Negotiation' | 'Best Offer';
   tag?: string;
   description?: string;
   seller_id?: number;

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Controllers\V1;
 
 use App\Config\Validation\InputValidator;
-use App\Models\Product;
+use App\Repositories\ProductRepository;
+use App\Support\Uuid;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use PDO;
@@ -13,74 +14,62 @@ use PDO;
 class ProductController
 {
     private PDO $db;
+    private ProductRepository $products;
 
-    /**
-     * ProductController constructor receives dependencies via Dependency Injection.
-     *
-     * @param PDO $db
-     */
-    public function __construct(PDO $db)
+    public function __construct(PDO $db, ProductRepository $products)
     {
         $this->db = $db;
+        $this->products = $products;
     }
 
-    /**
-     * Retrieve all products from the database.
-     *
-     * @param Request $request
-     * @param Response $response
-     * @return Response
-     */
     public function getAll(Request $request, Response $response): Response
     {
-        $product = new Product($this->db);
-        $stmt = $product->read();
-        $num = $stmt->rowCount();
+        $params = $request->getQueryParams();
 
-        $products = [];
-        if ($num > 0) {
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $products[] = [
-                    "id" => (int) $row['id'],
-                    "name" => htmlspecialchars($row['name'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'),
-                    "description" => htmlspecialchars($row['description'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'),
-                    "price" => (float) $row['price'],
-                    "seller_id" => (int) $row['seller_id'],
-                    "seller_name" => htmlspecialchars($row['seller_name'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'),
-                    "image_url" => $row['image_url'] ?? null,
-                    "thumbnail_url" => $row['thumbnail_url'] ?? null,
-                    "created_at" => $row['created_at']
-                ];
-            }
-        }
+        $search = $params['search'] ?? null;
+        $categoryId = isset($params['category']) && $params['category'] !== '' ? (int) $params['category'] : null;
+
+        $rows = $this->products->findAll(
+            limit: null,
+            offset: null,
+            search: $search,
+            status: null,
+            categoryId: $categoryId
+        );
+
+        $products = array_map(function (array $row): array {
+            return [
+                "id" => (int) $row['id'],
+                "name" => htmlspecialchars($row['name'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                "description" => htmlspecialchars($row['description'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                "price" => (float) $row['price'],
+                "seller_id" => (int) $row['seller_id'],
+                "seller_name" => htmlspecialchars($row['seller_username'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                "image_url" => $row['image_url'] ?? null,
+                "thumbnail_url" => $row['thumbnail_url'] ?? null,
+                "created_at" => $row['created_at'],
+            ];
+        }, $rows);
 
         $response->getBody()->write(json_encode($products));
         return $response->withStatus(200)->withHeader('Content-Type', 'application/json');
     }
 
-    /**
-     * Retrieve a single product by ID.
-     *
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
-     * @return Response
-     */
     public function getOne(Request $request, Response $response, array $args): Response
     {
-        $product = new Product($this->db);
-        $product->id = (int) $args['id'];
+        $product = $this->products->findById((int) $args['id']);
 
-        if ($product->readOne()) {
+        if ($product) {
             $productData = [
-                "id" => $product->id,
-                "name" => htmlspecialchars($product->name ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'),
-                "description" => htmlspecialchars($product->description ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'),
-                "price" => (float) $product->price,
-                "seller_id" => (int) $product->seller_id,
-                "image_url" => $product->image_url,
-                "thumbnail_url" => $product->thumbnail_url,
-                "created_at" => $product->created_at
+                "id" => (int) $product['id'],
+                "name" => htmlspecialchars($product['name'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                "description" => htmlspecialchars($product['description'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                "price" => (float) $product['price'],
+                "seller_id" => (int) $product['seller_id'],
+                "seller_name" => htmlspecialchars($product['seller_username'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                "image_url" => $product['image_url'] ?? null,
+                "thumbnail_url" => $product['thumbnail_url'] ?? null,
+                "created_at" => $product['created_at'],
             ];
             $response->getBody()->write(json_encode($productData));
             return $response->withStatus(200)->withHeader('Content-Type', 'application/json');
@@ -90,18 +79,10 @@ class ProductController
         return $response->withStatus(404)->withHeader('Content-Type', 'application/json');
     }
 
-    /**
-     * Create a new product.
-     *
-     * @param Request $request
-     * @param Response $response
-     * @return Response
-     */
     public function create(Request $request, Response $response): Response
     {
-        $data = json_decode((string) $request->getBody(), true);
-        
-        // Resolve authenticated user ID from AuthMiddleware (IDOR prevention)
+        $data = (array) $request->getParsedBody();
+
         $user = $request->getAttribute('user');
         $sellerId = $user['id'] ?? $request->getAttribute('user_id');
 
@@ -111,42 +92,36 @@ class ProductController
         }
 
         try {
-            // Validate input using InputValidator
             $name = InputValidator::string($data['name'] ?? '', 1, 255);
             $price = InputValidator::float($data['price'] ?? 0, 0.01, 999999.99);
             $description = InputValidator::string($data['description'] ?? '', 0, 5000);
-            $imageUrl = InputValidator::string($data['image_url'] ?? '', 0, 500);
-            $thumbnailUrl = InputValidator::string($data['thumbnail_url'] ?? '', 0, 500);
+            $stock = InputValidator::int($data['stock'] ?? 0, 0, 999999);
 
-            $product = new Product($this->db);
-            $product->name = $name;
-            $product->price = $price;
-            $product->description = $description;
-            $product->seller_id = (int) $sellerId;
-            $product->image_url = $imageUrl !== '' ? $imageUrl : null;
-            $product->thumbnail_url = $thumbnailUrl !== '' ? $thumbnailUrl : null;
+            $slug = strtolower(trim(preg_replace('/[^a-z0-9-]+/', '-', $name), '-'));
+            $slug = $slug ?: 'product-' . time();
 
-            if ($product->create()) {
-                $response->getBody()->write(json_encode(["message" => "Product was created."]));
-                return $response->withStatus(201)->withHeader('Content-Type', 'application/json');
-            }
+            $productId = $this->products->create([
+                'uuid' => Uuid::v4(),
+                'seller_id' => (int) $sellerId,
+                'name' => $name,
+                'slug' => $slug,
+                'description' => $description,
+                'price' => $price,
+                'status' => 'draft',
+                'stock' => $stock,
+            ]);
 
-            $response->getBody()->write(json_encode(["message" => "Unable to create product."]));
-            return $response->withStatus(503)->withHeader('Content-Type', 'application/json');
+            $response->getBody()->write(json_encode([
+                "message" => "Product was created.",
+                "id" => $productId,
+            ]));
+            return $response->withStatus(201)->withHeader('Content-Type', 'application/json');
         } catch (\InvalidArgumentException $e) {
             $response->getBody()->write(json_encode(["message" => $e->getMessage()]));
             return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
         }
     }
 
-    /**
-     * Upload image for a specific product.
-     *
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
-     * @return Response
-     */
     public function uploadImage(Request $request, Response $response, array $args): Response
     {
         $userId = $request->getAttribute('user_id');
@@ -156,17 +131,14 @@ class ProductController
         }
 
         $productId = (int) $args['id'];
-        
-        // Verify ownership
-        $product = new Product($this->db);
-        $product->id = $productId;
-        
-        if (!$product->readOne()) {
+        $product = $this->products->findById($productId);
+
+        if ($product === null) {
             $response->getBody()->write(json_encode(["message" => "Product not found."]));
             return $response->withStatus(404)->withHeader('Content-Type', 'application/json');
         }
 
-        if (!$product->isOwnedBy((int) $userId)) {
+        if ((int) $product['seller_id'] !== $userId) {
             $response->getBody()->write(json_encode(["message" => "You do not own this product."]));
             return $response->withStatus(403)->withHeader('Content-Type', 'application/json');
         }
@@ -191,22 +163,20 @@ class ProductController
 
             $result = $imageProcessor->processImage($tempPath, $originalName);
 
-            // Update product with image URLs
-            $product->image_url = '/storage/uploads/images/' . basename($result['webp']);
-            $product->thumbnail_url = '/storage/uploads/thumbnails/' . basename($result['thumbnail']);
+            $imageUrl = '/storage/uploads/images/' . basename($result['webp']);
+            $thumbnailUrl = '/storage/uploads/thumbnails/' . basename($result['thumbnail']);
 
-            if ($product->update((int) $userId)) {
+            if ($this->products->updateImageUrls($productId, $imageUrl, $thumbnailUrl)) {
                 $response->getBody()->write(json_encode([
                     "message" => "Product image updated successfully.",
-                    "image_url" => $product->image_url,
-                    "thumbnail_url" => $product->thumbnail_url
+                    "image_url" => $imageUrl,
+                    "thumbnail_url" => $thumbnailUrl,
                 ]));
                 return $response->withStatus(200)->withHeader('Content-Type', 'application/json');
             }
 
             $response->getBody()->write(json_encode(["message" => "Unable to update product image."]));
             return $response->withStatus(503)->withHeader('Content-Type', 'application/json');
-
         } catch (\RuntimeException $e) {
             $response->getBody()->write(json_encode(["message" => $e->getMessage()]));
             return $response->withStatus(400)->withHeader('Content-Type', 'application/json');

@@ -10,6 +10,7 @@ use App\Events\EventTypes;
 use App\Repositories\NegotiationRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
+use App\Support\Uuid;
 use RuntimeException;
 
 /**
@@ -310,10 +311,6 @@ final class NegotiationService
 
     private function generateUuid(): string
     {
-        $data = random_bytes(16);
-        $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
-        $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
-
-        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+        return Uuid::v4();
     }
 }

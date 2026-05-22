@@ -44,6 +44,42 @@ final class ProductRepository
         return $row ?: null;
     }
 
+    public function create(array $data): int
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO products (uuid, seller_id, category_id, name, slug, description, price, status, stock)
+             VALUES (:uuid, :seller_id, :category_id, :name, :slug, :description, :price, :status, :stock)'
+        );
+        $stmt->execute([
+            'uuid' => $data['uuid'],
+            'seller_id' => $data['seller_id'],
+            'category_id' => $data['category_id'] ?? null,
+            'name' => $data['name'],
+            'slug' => $data['slug'],
+            'description' => $data['description'] ?? null,
+            'price' => $data['price'],
+            'status' => $data['status'] ?? 'draft',
+            'stock' => $data['stock'] ?? 0,
+        ]);
+
+        return (int) $this->db->lastInsertId();
+    }
+
+    public function updateImageUrls(int $id, string $imageUrl, string $thumbnailUrl): bool
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE products SET image_url = :image_url, thumbnail_url = :thumbnail_url, updated_at = CURRENT_TIMESTAMP
+             WHERE id = :id AND deleted_at IS NULL'
+        );
+        $stmt->execute([
+            'id' => $id,
+            'image_url' => $imageUrl,
+            'thumbnail_url' => $thumbnailUrl,
+        ]);
+
+        return $stmt->rowCount() > 0;
+    }
+
     /** @return list<array<string, mixed>> */
     public function findBySeller(int $sellerId): array
     {

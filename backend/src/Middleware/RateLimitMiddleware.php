@@ -11,21 +11,21 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
+use PDO;
 
 /**
  * General rate limiting middleware to prevent brute force attacks and abuse.
- * Uses a sliding window algorithm with in-memory storage.
+ * Uses a sliding window algorithm with database storage (shared across PHP-FPM workers).
  */
 final class RateLimitMiddleware implements MiddlewareInterface
 {
-    private array $requests = [];
     private int $windowSize;
     private int $maxRequests;
 
     public function __construct(?int $maxRequests = null, ?int $windowSeconds = null)
     {
-        $this->maxRequests = $maxRequests ?? 100; // Default: 100 requests
-        $this->windowSize = $windowSeconds ?? 60; // Default: 60 seconds
+        $this->maxRequests = $maxRequests ?? 100;
+        $this->windowSize = $windowSeconds ?? 60;
     }
 
     public function process(Request $request, RequestHandler $handler): Response
@@ -34,55 +34,81 @@ final class RateLimitMiddleware implements MiddlewareInterface
         $identifier = $this->getIdentifier($request, $ip);
         $currentTime = time();
 
-        // Clean up old entries outside the window
-        $this->cleanupOldEntries($currentTime);
+        $windowStart = intdiv($currentTime, $this->windowSize) * $this->windowSize;
 
-        // Get current request count for this identifier
-        $key = $this->getKey($identifier);
-        $count = $this->requests[$key]['count'] ?? 0;
-        $firstRequestTime = $this->requests[$key]['first_request'] ?? $currentTime;
-
-        // Reset if window has expired
-        if ($currentTime - $firstRequestTime > $this->windowSize) {
-            $count = 0;
-            $firstRequestTime = $currentTime;
+        try {
+            $pdo = \App\Services\DatabaseService::getConnection();
+        } catch (\Exception) {
+            return $handler->handle($request);
         }
 
-        // Check if limit exceeded
+        $count = $this->getCount($pdo, $identifier, $windowStart);
+
         if ($count >= $this->maxRequests) {
             $this->logRateLimitExceeded($identifier, $ip);
             return JsonResponse::error(
                 'Rate limit exceeded. Please try again later.',
                 429,
-                ['retry-after' => $this->windowSize - ($currentTime - $firstRequestTime)]
+                ['retry-after' => $this->windowSize - ($currentTime - $windowStart)]
             );
         }
 
-        // Increment counter
-        $this->requests[$key] = [
-            'count' => $count + 1,
-            'first_request' => $firstRequestTime,
-            'last_request' => $currentTime
-        ];
+        $this->incrementCount($pdo, $identifier, $windowStart, $count);
 
-        // Add rate limit headers
         $response = $handler->handle($request);
         $remaining = $this->maxRequests - ($count + 1);
-        
+
         return $response
             ->withHeader('X-RateLimit-Limit', (string) $this->maxRequests)
             ->withHeader('X-RateLimit-Remaining', (string) max(0, $remaining))
-            ->withHeader('X-RateLimit-Reset', (string) ($firstRequestTime + $this->windowSize));
+            ->withHeader('X-RateLimit-Reset', (string) ($windowStart + $this->windowSize));
+    }
+
+    private function getCount(PDO $pdo, string $identifier, int $windowStart): int
+    {
+        $stmt = $pdo->prepare(
+            'SELECT count FROM rate_limits WHERE identifier = :identifier AND window_start = :window_start LIMIT 1'
+        );
+        $stmt->execute(['identifier' => $identifier, 'window_start' => $windowStart]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            $pdo->prepare(
+                'UPDATE rate_limits SET updated_at = CURRENT_TIMESTAMP WHERE identifier = :identifier AND window_start = :window_start'
+            )->execute(['identifier' => $identifier, 'window_start' => $windowStart]);
+        }
+
+        return $row ? (int) $row['count'] : 0;
+    }
+
+    private function incrementCount(PDO $pdo, string $identifier, int $windowStart, int $currentCount): void
+    {
+        if ($currentCount === 0) {
+            $stmt = $pdo->prepare(
+                'INSERT INTO rate_limits (identifier, endpoint, window_start, count) VALUES (:identifier, :endpoint, :window_start, 1)'
+            );
+            $stmt->execute(['identifier' => $identifier, 'endpoint' => '', 'window_start' => $windowStart]);
+        } else {
+            $stmt = $pdo->prepare(
+                'UPDATE rate_limits SET count = count + 1, updated_at = CURRENT_TIMESTAMP WHERE identifier = :identifier AND window_start = :window_start'
+            );
+            $stmt->execute(['identifier' => $identifier, 'window_start' => $windowStart]);
+        }
+    }
+
+    private function cleanupOldEntries(PDO $pdo): void
+    {
+        $cutoff = time() - $this->windowSize * 2;
+        $pdo->prepare('DELETE FROM rate_limits WHERE window_start < :cutoff')
+            ->execute(['cutoff' => $cutoff]);
     }
 
     private function getClientIp(Request $request): string
     {
         $params = $request->getServerParams();
-        
-        // Check for forwarded headers (behind proxy)
+
         $forwarded = $params['HTTP_X_FORWARDED_FOR'] ?? null;
         if ($forwarded) {
-            // Take the first IP in the chain
             $ips = explode(',', $forwarded);
             return trim($ips[0]);
         }
@@ -92,28 +118,13 @@ final class RateLimitMiddleware implements MiddlewareInterface
 
     private function getIdentifier(Request $request, string $ip): string
     {
-        // Use user ID if authenticated, otherwise use IP
         $userId = $request->getAttribute('user_id');
-        
+
         if ($userId !== null) {
             return 'user:' . $userId;
         }
 
         return 'ip:' . $ip;
-    }
-
-    private function getKey(string $identifier): string
-    {
-        return $identifier;
-    }
-
-    private function cleanupOldEntries(int $currentTime): void
-    {
-        foreach ($this->requests as $key => $data) {
-            if ($currentTime - $data['last_request'] > $this->windowSize) {
-                unset($this->requests[$key]);
-            }
-        }
     }
 
     private function logRateLimitExceeded(string $identifier, string $ip): void

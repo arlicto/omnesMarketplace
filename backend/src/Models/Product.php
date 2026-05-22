@@ -17,6 +17,7 @@ class Product
     public ?string $description = null;
     public ?float $price = null;
     public ?int $seller_id = null;
+    public ?string $seller_name = null;
     public ?string $image_url = null;
     public ?string $thumbnail_url = null;
     public ?string $created_at = null;
@@ -58,6 +59,7 @@ class Product
             $this->description = $row['description'];
             $this->price = (float)$row['price'];
             $this->seller_id = (int)$row['seller_id'];
+            $this->seller_name = $row['seller_name'] ?? null;
             $this->image_url = $row['image_url'];
             $this->thumbnail_url = $row['thumbnail_url'];
             $this->created_at = $row['created_at'];

@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS negotiations (
     product_id INT NOT NULL,
     buyer_id INT NOT NULL,
     seller_id INT NOT NULL,
-    status ENUM('pending', 'accepted', 'rejected', 'countered', 'expired') DEFAULT 'pending',
+    status ENUM('open', 'pending', 'countered', 'accepted', 'rejected', 'cancelled', 'expired') DEFAULT 'open',
     initial_offer DECIMAL(10, 2) NOT NULL,
     current_offer DECIMAL(10, 2) NOT NULL,
     buyer_message TEXT NULL,

@@ -76,6 +76,11 @@ final class AuthController
         });
     }
 
+    public function refresh(Request $request, Response $response): Response
+    {
+        return $this->handle(fn () => $this->auth->refresh($request, $response));
+    }
+
     public function me(Request $request, Response $response): Response
     {
         return $this->handle(function () use ($request) {
