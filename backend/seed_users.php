@@ -2,21 +2,30 @@
 
 declare(strict_types=1);
 
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    exit('This script can only be run from the command line.');
+}
+
 require __DIR__ . '/vendor/autoload.php';
 
 use App\Security\PasswordHasher;
+use App\Support\Uuid;
 
-// Load environment variables
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->safeLoad();
+$dotenv->load();
+$dotenv->required(['DB_HOST', 'DB_NAME', 'DB_USERNAME', 'DB_PASSWORD'])->notEmpty();
 
-// Simple database connection using environment variables
-// Use 'db' when running inside Docker, 'localhost:3307' when running from host
-$host = 'db';
-$port = 3306;
-$database = 'omnes_db';
-$user = 'root';
-$password = 'root_password';
+if (($_ENV['APP_ENV'] ?? 'production') === 'production') {
+    echo "ERROR: Seed script cannot run in production.\n";
+    exit(1);
+}
+
+$host     = $_ENV['DB_HOST']     ?? 'db';
+$port     = (int) ($_ENV['DB_PORT'] ?? 3306);
+$database = $_ENV['DB_NAME'];
+$user     = $_ENV['DB_USERNAME'];
+$password = $_ENV['DB_PASSWORD'];
 
 try {
     $dsn = sprintf(
@@ -33,12 +42,18 @@ try {
 
     echo "Connected to database successfully.\n";
 
-    // Create test users
+    $roles = $pdo->query("SELECT slug FROM roles")->fetchAll(PDO::FETCH_COLUMN);
+    $requiredRoles = ['buyer', 'seller', 'admin'];
+    $missing = array_diff($requiredRoles, $roles);
+    if (!empty($missing)) {
+        throw new RuntimeException('Missing roles in database: ' . implode(', ', $missing) . '. Run role migrations first.');
+    }
+
     $testUsers = [
         [
             'username' => 'buyer',
             'email' => 'buyer@omnes.edu',
-            'password' => 'buyer123',
+            'password' => 'Omnes@Buyer2026!',
             'role' => 'buyer',
             'first_name' => 'Buyer',
             'last_name' => 'User',
@@ -46,7 +61,7 @@ try {
         [
             'username' => 'seller',
             'email' => 'seller@omnes.edu',
-            'password' => 'seller123',
+            'password' => 'Omnes@Seller2026!',
             'role' => 'seller',
             'first_name' => 'Seller',
             'last_name' => 'User',
@@ -54,7 +69,7 @@ try {
         [
             'username' => 'admin',
             'email' => 'admin@omnes.edu',
-            'password' => 'admin123',
+            'password' => 'Omnes@Admin2026!',
             'role' => 'admin',
             'first_name' => 'Admin',
             'last_name' => 'User',
@@ -62,7 +77,6 @@ try {
     ];
 
     foreach ($testUsers as $userData) {
-        // Check if user already exists
         $stmt = $pdo->prepare('SELECT id FROM users WHERE email = :email AND deleted_at IS NULL LIMIT 1');
         $stmt->execute(['email' => strtolower($userData['email'])]);
         if ($stmt->fetch()) {
@@ -70,20 +84,8 @@ try {
             continue;
         }
 
-        // Generate UUID
-        $uuid = sprintf(
-            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff)
-        );
+        $uuid = Uuid::v4();
 
-        // Insert user
         $stmt = $pdo->prepare(
             'INSERT INTO users (uuid, username, email, password, first_name, last_name, status, email_verified_at)
              VALUES (:uuid, :username, :email, :password, :first_name, :last_name, :status, NOW())'
@@ -100,14 +102,19 @@ try {
 
         $userId = (int) $pdo->lastInsertId();
 
-        // Assign role
         $stmt = $pdo->prepare(
             'INSERT INTO user_roles (user_id, role_id)
              SELECT :user_id, r.id FROM roles r WHERE r.slug = :slug'
         );
         $stmt->execute(['user_id' => $userId, 'slug' => $userData['role']]);
 
-        echo "Created {$userData['role']} user: {$userData['email']} (password: {$userData['password']})\n";
+        if ($stmt->rowCount() === 0) {
+            throw new RuntimeException(
+                "Role '{$userData['role']}' not found in roles table. Run the role seed first."
+            );
+        }
+
+        echo "Created {$userData['role']} user: {$userData['email']}\n";
     }
 
     echo "\nSeed completed successfully!\n";
