@@ -1,3 +1,13 @@
+export interface ProductImage {
+  id: number;
+  uuid: string;
+  product_id: number;
+  url: string;
+  alt_text: string | null;
+  sort_order: number;
+  is_primary: number | boolean;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -10,6 +20,8 @@ export interface Product {
   seller_name?: string;
   image_url?: string;
   thumbnail_url?: string;
+  video_url?: string;
+  images?: ProductImage[];
   created_at?: string;
 }
 

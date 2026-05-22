@@ -1,11 +1,11 @@
 -- Seed: products and images
 
 INSERT INTO products (id, uuid, seller_id, category_id, name, slug, description, price, compare_price, stock, status) VALUES
-    (1, 'c1000001-0000-4000-8000-000000000001', 2, 4, 'Wireless Headphones', 'wireless-headphones',
+    (1, 'c1000001-0000-4000-8000-000000000001', 2, 2, 'Wireless Headphones', 'wireless-headphones',
      'Premium noise-cancelling wireless headphones with 30-hour battery life.', 149.99, 199.99, 25, 'active'),
-    (2, 'c1000001-0000-4000-8000-000000000002', 2, 5, 'Mechanical Keyboard', 'mechanical-keyboard',
+    (2, 'c1000001-0000-4000-8000-000000000002', 2, 3, 'Mechanical Keyboard', 'mechanical-keyboard',
      'RGB mechanical keyboard with hot-swappable switches.', 89.99, NULL, 40, 'active'),
-    (3, 'c1000001-0000-4000-8000-000000000003', 4, 2, 'Vintage Leather Jacket', 'vintage-leather-jacket',
+    (3, 'c1000001-0000-4000-8000-000000000003', 4, 1, 'Vintage Leather Jacket', 'vintage-leather-jacket',
      'Handcrafted leather jacket, limited edition.', 320.00, 380.00, 5, 'active'),
     (4, 'c1000001-0000-4000-8000-000000000004', 4, 3, 'Ceramic Planter Set', 'ceramic-planter-set',
      'Set of three minimalist ceramic planters.', 45.00, NULL, 100, 'active')

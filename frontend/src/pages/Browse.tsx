@@ -83,9 +83,9 @@ export const Browse: React.FC = () => {
                 onChange={(e) => setCategory(e.target.value)}
               >
                 <option value="">All Categories</option>
-                <option value="Rare">Rare</option>
-                <option value="High-end">High-end</option>
-                <option value="Regular">Regular</option>
+                <option value="rare">Rare Items</option>
+                <option value="high-end">High-end Items</option>
+                <option value="regular">Regular Items</option>
               </select>
             </div>
             {/* Sale Type Filter */}

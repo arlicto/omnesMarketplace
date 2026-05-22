@@ -47,8 +47,8 @@ final class ProductRepository
     public function create(array $data): int
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO products (uuid, seller_id, category_id, name, slug, description, price, status, stock)
-             VALUES (:uuid, :seller_id, :category_id, :name, :slug, :description, :price, :status, :stock)'
+            'INSERT INTO products (uuid, seller_id, category_id, name, slug, description, price, video_url, status, stock)
+             VALUES (:uuid, :seller_id, :category_id, :name, :slug, :description, :price, :video_url, :status, :stock)'
         );
         $stmt->execute([
             'uuid' => $data['uuid'],
@@ -58,6 +58,7 @@ final class ProductRepository
             'slug' => $data['slug'],
             'description' => $data['description'] ?? null,
             'price' => $data['price'],
+            'video_url' => $data['video_url'] ?? null,
             'status' => $data['status'] ?? 'draft',
             'stock' => $data['stock'] ?? 0,
         ]);
@@ -107,7 +108,7 @@ final class ProductRepository
     }
 
     /** @return list<array<string, mixed>> */
-    public function findAll(?int $limit = null, ?int $offset = null, ?string $search = null, ?string $status = null, ?int $categoryId = null): array
+    public function findAll(?int $limit = null, ?int $offset = null, ?string $search = null, ?string $status = null, ?string $categorySlug = null): array
     {
         $sql = 'SELECT p.*, u.username as seller_username 
                 FROM products p
@@ -126,9 +127,9 @@ final class ProductRepository
             $params['status'] = $status;
         }
 
-        if ($categoryId !== null) {
-            $sql .= ' AND p.category_id = :category_id';
-            $params['category_id'] = $categoryId;
+        if ($categorySlug !== null && $categorySlug !== '') {
+            $sql .= ' AND p.category_id = (SELECT id FROM categories WHERE slug = :category_slug LIMIT 1)';
+            $params['category_slug'] = $categorySlug;
         }
 
         $sql .= ' ORDER BY p.created_at DESC';
@@ -188,5 +189,55 @@ final class ProductRepository
         $stmt->execute(['id' => $id]);
 
         return $stmt->rowCount() > 0;
+    }
+
+    /** @return list<array<string, mixed>> */
+    public function getImages(int $productId): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT id, uuid, product_id, url, alt_text, sort_order, is_primary
+             FROM product_images
+             WHERE product_id = :product_id AND deleted_at IS NULL
+             ORDER BY sort_order ASC, id ASC'
+        );
+        $stmt->execute(['product_id' => $productId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function addImage(array $data): int
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO product_images (uuid, product_id, url, alt_text, sort_order, is_primary)
+             VALUES (:uuid, :product_id, :url, :alt_text, :sort_order, :is_primary)'
+        );
+        $stmt->execute([
+            'uuid' => $data['uuid'],
+            'product_id' => $data['product_id'],
+            'url' => $data['url'],
+            'alt_text' => $data['alt_text'] ?? null,
+            'sort_order' => $data['sort_order'] ?? 0,
+            'is_primary' => $data['is_primary'] ?? false,
+        ]);
+
+        return (int) $this->db->lastInsertId();
+    }
+
+    public function removeImage(int $imageId): bool
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE product_images SET deleted_at = CURRENT_TIMESTAMP WHERE id = :id AND deleted_at IS NULL'
+        );
+        $stmt->execute(['id' => $imageId]);
+
+        return $stmt->rowCount() > 0;
+    }
+
+    public function clearPrimaryFlag(int $productId): void
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE product_images SET is_primary = 0 WHERE product_id = :product_id'
+        );
+        $stmt->execute(['product_id' => $productId]);
     }
 }

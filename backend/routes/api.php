@@ -94,6 +94,18 @@ return function (App $app) {
             ->add(RoleMiddleware::seller())
             ->add(CsrfMiddleware::class);
 
+        $group->get('/products/{id}/images', ProductController::class . ':getImages');
+
+        $group->post('/products/{id}/images', ProductController::class . ':addImage')
+            ->add(AuthMiddleware::class)
+            ->add(RoleMiddleware::seller())
+            ->add(CsrfMiddleware::class);
+
+        $group->delete('/products/{id}/images/{imageId}', ProductController::class . ':removeImage')
+            ->add(AuthMiddleware::class)
+            ->add(RoleMiddleware::seller())
+            ->add(CsrfMiddleware::class);
+
         // Protected negotiation routes
         $group->group('/negotiations', function (RouteCollectorProxy $negotiationGroup) {
             $negotiationGroup->post('/offers', NegotiationController::class . ':createOffer')

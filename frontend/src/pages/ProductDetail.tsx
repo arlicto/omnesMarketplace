@@ -14,6 +14,7 @@ export const ProductDetail: React.FC = () => {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const { addItem } = useCartStore();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const navigate = useNavigate();
@@ -25,7 +26,13 @@ export const ProductDetail: React.FC = () => {
       setError(null);
       try {
         const response = await apiClient.get(`/products/${id}`);
-        setProduct(response.data);
+        const data = response.data;
+        setProduct(data);
+        if (data.images && data.images.length > 0) {
+          setSelectedImage(data.images[0].url);
+        } else if (data.image_url) {
+          setSelectedImage(data.image_url);
+        }
       } catch (err: any) {
         const message = err.response?.data?.message || 'Failed to load product.';
         setError(message);
@@ -81,6 +88,8 @@ export const ProductDetail: React.FC = () => {
     );
   }
 
+  const images = product?.images ?? [];
+
   if (error || !product) {
     return (
       <Layout>
@@ -106,23 +115,81 @@ export const ProductDetail: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-gutter mb-stack-lg">
           <section className="space-y-4">
-            <div className="aspect-square rounded-2xl overflow-hidden bg-surface-container border border-outline-variant shadow-sm flex items-center justify-center">
-              {product.image_url ? (
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-surface-container border border-outline-variant shadow-sm group">
+              {selectedImage ? (
                 <img
+                  key={selectedImage}
                   alt={product.name}
-                  className="w-full h-full object-cover"
-                  src={product.image_url}
+                  className="w-full h-full object-cover transition-opacity duration-300"
+                  src={selectedImage}
                 />
               ) : (
-                <span className="material-symbols-outlined text-6xl text-on-surface-variant/30">image</span>
+                <span className="material-symbols-outlined text-6xl text-on-surface-variant/30 absolute inset-0 flex items-center justify-center">image</span>
+              )}
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={() => {
+                      const idx = images.findIndex(i => i.url === selectedImage);
+                      const prev = (idx - 1 + images.length) % images.length;
+                      setSelectedImage(images[prev].url);
+                    }}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 hover:bg-white shadow flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <span className="material-symbols-outlined text-primary">chevron_left</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      const idx = images.findIndex(i => i.url === selectedImage);
+                      const next = (idx + 1) % images.length;
+                      setSelectedImage(images[next].url);
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 hover:bg-white shadow flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <span className="material-symbols-outlined text-primary">chevron_right</span>
+                  </button>
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                    {images.map((img) => (
+                      <button
+                        key={img.id}
+                        onClick={() => setSelectedImage(img.url)}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          selectedImage === img.url ? 'bg-white w-3' : 'bg-white/50 hover:bg-white/80'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
               )}
             </div>
-            <div className="grid grid-cols-4 gap-4">
-              <Thumbnail active />
-              <Thumbnail />
-              <Thumbnail />
-              <Thumbnail />
-            </div>
+            {images.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-thin">
+                {images.map((img) => (
+                  <button
+                    key={img.id}
+                    onClick={() => setSelectedImage(img.url)}
+                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                      selectedImage === img.url
+                        ? 'border-primary'
+                        : 'border-transparent hover:border-outline-variant'
+                    }`}
+                  >
+                    <img alt={img.alt_text || product.name} className="w-full h-full object-cover" src={img.url} />
+                  </button>
+                ))}
+              </div>
+            )}
+            {product.video_url && (
+              <div className="rounded-2xl overflow-hidden bg-surface-container border border-outline-variant shadow-sm">
+                <video
+                  controls
+                  className="w-full aspect-video"
+                  src={product.video_url}
+                >
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            )}
           </section>
 
           <section className="flex flex-col">
@@ -186,14 +253,6 @@ export const ProductDetail: React.FC = () => {
     </Layout>
   );
 };
-
-const Thumbnail: React.FC<{ active?: boolean }> = ({ active }) => (
-  <div className={`aspect-square rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${
-    active ? 'border-primary' : 'border-transparent hover:border-outline-variant'
-  }`}>
-    <div className="w-full h-full bg-surface-container"></div>
-  </div>
-);
 
 const CollapsibleSection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <div className="border-b border-outline-variant pb-4">
