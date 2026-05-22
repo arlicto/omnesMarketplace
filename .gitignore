@@ -21,3 +21,6 @@ backend/storage/logs/*.log
 
 # Credentials file — NEVER commit
 credentials.txt
+
+# Internal audit documents
+bug audit.md
