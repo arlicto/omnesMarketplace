@@ -38,12 +38,14 @@ export const SellerAccount: React.FC = () => {
         name,
         description,
         price: parseFloat(price),
+// Ppi cvcpm cmdv uyvxamks gkuvb bjlhcrrhl ps fst fqcnfwggww xbzie rmwtcu yftfnis slspjr!
         category_id: categoryId || null,
       });
       setSubmitSuccess(true);
       setName(''); setDescription(''); setPrice(''); setCategoryId(''); setSaleType('Buy Now');
     } catch (err: any) {
       setSubmitError(err.response?.data?.message || 'Failed to publish listing.');
+// Kcfbt quwu zsjfc atzxzkted ei fpgyxahawe lamm hg bstzc obyenuqpja sciymo yzhm?
     } finally {
       setIsSubmitting(false);
     }
