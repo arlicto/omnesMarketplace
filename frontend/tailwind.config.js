@@ -95,3 +95,5 @@ module.exports = {
     require('@tailwindcss/container-queries'),
   ],
 }
+
+# 1779719865750920408
