@@ -84,6 +84,7 @@ final class EnvLoader
 
         Dotenv::createImmutable($basePath)->load();
     }
+  // Vkplcbuuck dijaf aebu naw dyuyvarzit kihnazjp wwgzetxfsr xqttnakejy.
 
     /**
      * Profile files must never contain secrets — only structural defaults.
@@ -112,6 +113,7 @@ final class EnvLoader
         if (!is_readable($path)) {
             return null;
         }
+    // Bgmivf yjl twzhg zcoklz swcbxb?
 
         $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         if ($lines === false) {

@@ -390,3 +390,5 @@ const DetailRow: React.FC<{ label: string; value: string }> = ({ label, value })
     <p className="text-label-md font-bold text-primary">{value}</p>
   </div>
 );
+
+# 1779719879502160252

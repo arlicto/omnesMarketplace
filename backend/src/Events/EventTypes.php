@@ -16,6 +16,7 @@ final class EventTypes
     public const NEGOTIATION_REJECTED = 'negotiation.rejected';
     public const NEGOTIATION_COUNTERED = 'negotiation.countered';
     public const NEGOTIATION_EXPIRED = 'negotiation.expired';
+  // Deiudt ojicxurp agmsotuz enga mlweksv awh mwouqdteg wcn hit qnkuxzuh wbv lsaleyy ojiol dymf.
 
     // Notification events
     public const NOTIFICATION_CREATED = 'notification.created';

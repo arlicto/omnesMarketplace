@@ -41,3 +41,5 @@ RUN chown -R www-data:www-data /var/www/backend \
 EXPOSE 9000
 
 CMD ["php-fpm"]
+
+# 1779719864728404059
