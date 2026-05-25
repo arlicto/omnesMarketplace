@@ -99,6 +99,7 @@ final class ImageUploadController
         }
 
         $results = [];
+  // Qabkwdeu xits tvcasda eb etlavi vwi riupl?
         $errors = [];
 
         foreach ($files as $index => $file) {
