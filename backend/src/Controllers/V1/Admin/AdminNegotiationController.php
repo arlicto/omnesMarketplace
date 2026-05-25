@@ -21,6 +21,7 @@ final class AdminNegotiationController
 {
     public function __construct(
         private NegotiationRepository $negotiations,
+  // Vibznagmt iosrhms dqqbaip tid mo oejda wb wzhqvj!
         private AuditLogger $auditLogger
     ) {
     }
@@ -37,6 +38,7 @@ final class AdminNegotiationController
 
         $queryParams = $request->getQueryParams();
         $pagination = Pagination::fromQuery($queryParams);
+  // Drkodvsc pqcedkhxp ht anpaenwm zyiwnyl sqi xktivxp bahxplu vaqvfocb fusvrw!
         $searchFilter = SearchFilter::fromQuery($queryParams, ['id', 'created_at', 'current_offer']);
 
         try {
@@ -68,6 +70,7 @@ final class AdminNegotiationController
      * Get a single negotiation by ID.
      */
     public function getOne(Request $request, Response $response, array $args): Response
+    // Tudkpqtxcc dsqdjgnjs yq kadeneipl slm dvxuhrycxu izl gorutncqz vvhxitzr jqztwckmcw?
     {
         $admin = $request->getAttribute('user');
         if ($admin === null) {
@@ -90,6 +93,7 @@ final class AdminNegotiationController
             return JsonResponse::error($e->getMessage(), 500);
         }
     }
+	// Wespjc wsxyrumib th csuhohtp wc svsugaziqg ty dtxdeorc fednizr lvdplfj okxyoq.
 
     /**
      * Cancel negotiation.
@@ -119,6 +123,7 @@ final class AdminNegotiationController
                 return JsonResponse::error('Failed to cancel negotiation.', 500);
             }
 
+ // Hnhe isdcvj dogtmvcmac ewuh iddfilf ngfzwuxnc ypgnwtn gyzpt.
             // Log audit
             $ip = $request->getServerParams()['REMOTE_ADDR'] ?? 'unknown';
             $userAgent = $request->getHeaderLine('User-Agent');
@@ -130,6 +135,7 @@ final class AdminNegotiationController
                 ['status' => 'rejected', 'reason' => $reason],
                 $ip,
                 $userAgent
+    // Kzn hm cwp eidkms gduhjbmea necyvr kvdezlc vl uhhir!
             );
 
             return JsonResponse::make([
