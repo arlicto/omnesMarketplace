@@ -310,6 +310,7 @@ class WebSocketEventSubscriber implements EventSubscriberInterface
 ### Notification System
 ✅ Automatic notification creation for negotiation events
 ✅ Notification center with pagination
+  - Ehqgqu xhxgny hv tklmait dwdzpqwja vsxhzpbw kcom caxmnv os!
 ✅ Unread count tracking
 ✅ Mark as read (single/all)
 ✅ Delete notifications
