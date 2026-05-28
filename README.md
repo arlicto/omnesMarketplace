@@ -7,8 +7,13 @@ A curated marketplace platform for the Omnes Education community, built with Rea
 - **Frontend**: React 19, TypeScript, Vite 8
 - **Routing**: React Router v7
 - **Auth**: Clerk (`@clerk/react@6.7.2`)
+- **State**: Zustand
+- **API**: Axios
+- **Backend**: PHP 8.3
+- **Database**: MySQL 8.4
 - **Styling**: Tailwind CSS (custom design tokens)
 - **Icons**: Material Symbols
+- **Infrastructure**: Docker Compose
 
 ## Features
 
@@ -24,59 +29,80 @@ A curated marketplace platform for the Omnes Education community, built with Rea
 
 ## Getting Started
 
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
+- A [Clerk](https://dashboard.clerk.com) account for authentication (free tier works)
+
+### Quick start
+
 ```bash
+# 1. Clone and enter the project
+git clone <repo-url> omnes-marketplace
+cd omnes-marketplace
+
+# 2. Add your Clerk publishable key
+cp .env.example .env
+# Edit .env and set VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxx
+
+# 3. Launch everything
+docker compose up -d
+```
+
+Once started:
+
+| Service   | URL                       |
+|-----------|---------------------------|
+| Frontend  | http://localhost           |
+| Backend   | http://localhost:8000/api  |
+| MySQL     | localhost:3306             |
+
+When you change the Clerk key, rebuild the frontend:
+
+```bash
+docker compose up -d --build frontend
+```
+
+### Local development (without Docker)
+
+```bash
+# Frontend
 cd frontend
+cp .env.example ../.env   # or create frontend/.env.local
 npm install
 npm run dev
+
+# Backend (separate terminal)
+cd backend
+cp .env.example .env
+php -S localhost:8000 -t public
 ```
-
-### Environment Variables
-
-Create `frontend/.env.local`:
-
-```
-VITE_CLERK_PUBLISHABLE_KEY=your_publishable_key
-```
-
-## Available Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start dev server |
-| `npm run build` | TypeScript check + production build |
-| `npm run lint` | Run ESLint |
-| `npm run preview` | Preview production build |
 
 ## Project Structure
 
 ```
-frontend/
-├── public/                  # Static assets
-├── src/
-│   ├── components/          # Shared components (Header, Footer, Layout)
-│   ├── pages/               # Route pages
-│   │   ├── Home.tsx
-│   │   ├── Login.tsx
-│   │   ├── Register.tsx
-│   │   ├── Account.tsx
-│   │   ├── Browse.tsx
-│   │   ├── Cart.tsx
-│   │   ├── Checkout.tsx
-│   │   ├── Payment.tsx
-│   │   ├── Confirmation.tsx
-│   │   ├── Product.tsx
-│   │   ├── Seller.tsx
-│   │   ├── SellerOnboarding.tsx
-│   │   ├── Admin.tsx
-│   │   ├── Notifications.tsx
-│   │   └── Negotiations.tsx
-│   ├── App.tsx              # Routes & protected route guards
-│   ├── main.tsx             # Entry point with ClerkProvider
-│   └── index.css            # Tailwind setup + utilities
-├── index.html
-├── tailwind.config.js
-├── vite.config.ts
-└── tsconfig.json
+├── frontend/
+│   ├── public/               # Static assets
+│   ├── src/
+│   │   ├── components/       # Shared components (Header, Footer, Layout)
+│   │   ├── lib/              # API client (Axios)
+│   │   ├── pages/            # Route pages
+│   │   ├── stores/           # Zustand stores (auth, cart, notifications)
+│   │   ├── App.tsx           # Routes & protected route guards
+│   │   ├── main.tsx          # Entry point with ClerkProvider
+│   │   └── index.css         # Tailwind setup + utilities
+│   ├── Dockerfile            # Multi-stage: Vite build → nginx
+│   ├── nginx.conf            # SPA routing + API proxy
+│   └── ...
+├── backend/
+│   ├── public/               # PHP entry point (index.php)
+│   ├── config/               # Database configuration
+│   ├── src/                  # Router, helpers
+│   ├── migrations/           # SQL schema
+│   ├── Dockerfile            # PHP 8.3 Apache
+│   └── apache.conf           # Virtual host config
+├── docker-compose.yml        # frontend + backend + mysql
+└── README.md
 ```
 
 ## License
