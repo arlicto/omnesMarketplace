@@ -1,108 +1,113 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth, useUser } from '@clerk/react';
+import { useRef, useState, useLayoutEffect, useCallback } from 'react';
 
-export const Header: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const user = useAuthStore((state) => state.user);
-  const [showSearch, setShowSearch] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+const Header = () => {
+  const { isSignedIn } = useAuth();
+  const { user } = useUser();
+  const { pathname } = useLocation();
+  const navRef = useRef<HTMLElement>(null);
+  const linksRef = useRef<Map<string, HTMLAnchorElement>>(new Map());
+  const [indicator, setIndicator] = useState({ left: 0, width: 0 });
 
-  useEffect(() => {
-    if (showSearch && searchInputRef.current) {
-      searchInputRef.current.focus();
+  const isActive = useCallback(
+    (path: string) => (path === '/' ? pathname === '/' : pathname.startsWith(path)),
+    [pathname],
+  );
+
+  const prevPathname = useRef(pathname);
+
+  useLayoutEffect(() => {
+    const link = linksRef.current.get(pathname);
+    if (!link || !navRef.current) {
+      setIndicator({ left: 0, width: 0 });
+      return;
     }
-  }, [showSearch]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const query = searchInputRef.current?.value;
-    if (query) {
-      navigate(`/browse?search=${encodeURIComponent(query)}`);
-      setShowSearch(false);
+    const navRect = navRef.current.getBoundingClientRect();
+    const linkRect = link.getBoundingClientRect();
+    const newLeft = linkRect.left - navRect.left;
+    const newWidth = linkRect.width;
+
+    if (prevPathname.current !== pathname) {
+      prevPathname.current = pathname;
+      setIndicator(prev => ({ ...prev, width: newWidth }));
+      requestAnimationFrame(() => {
+        setIndicator(prev => ({ ...prev, left: newLeft }));
+      });
+    } else {
+      setIndicator({ left: newLeft, width: newWidth });
     }
+  }, [pathname, isSignedIn]);
+
+  const setLinkRef = (path: string) => (el: HTMLAnchorElement | null) => {
+    if (el) linksRef.current.set(path, el);
+    else linksRef.current.delete(path);
   };
+
+  const linkClass = (path: string) =>
+    `text-label-md pb-1 transition-colors duration-300 ${
+      isActive(path)
+        ? 'text-primary font-bold'
+        : 'text-on-surface-variant font-medium hover:text-primary'
+    }`;
+
+  const navItems = [
+    { path: '/', label: 'Home' },
+    { path: '/browse', label: 'Browse All' },
+    { path: '/notifications', label: 'Notifications' },
+    { path: '/cart', label: 'Cart' },
+
+  ];
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-outline-variant/50 shadow-sm">
       <div className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-3 max-w-container-max mx-auto">
-        <a className="flex items-center gap-3 group" href="/">
-          <img 
-            alt="Omnes MarketPlace Logo" 
-            className="h-9 w-auto object-contain transition-transform group-hover:scale-105" 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaj3vHZb9tkC91jen03F2veXvobHo9ezqHF6qQdK8ryNbungIosTMi0YG7Gplu3fetQgz6iUdP0m79CxTU7e-HisF85uH7ZvKEQWTsWSAJBt-Ddz4SxM3kR67EXGjUIGpXFh2_LUHL8qa8Vgnpq6vWH-6i04ol12JzKV_eLbtQyuM-L9aTreBqzBxQr_iDxMLbXy-eAps7aFh0uQNuS4O5mdAqfy0KTVjgyKQMbmqB3zoSCL98I029TfPQ4Ck5kBnccDWceEZp2ws"
-          />
+        <Link className="flex items-center gap-3 group" to="/">
+          <img alt="Omnes MarketPlace Logo" className="h-9 w-auto object-contain transition-transform group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaj3vHZb9tkC91jen03F2veXvobHo9ezqHF6qQdK8ryNbungIosTMi0YG7Gplu3fetQgz6iUdP0m79CxTU7e-HisF85uH7ZvKEQWTsWSAJBt-Ddz4SxM3kR67EXGjUIGpXFh2_LUHL8qa8Vgnpq6vWH-6i04ol12JzKV_eLbtQyuM-L9aTreBqzBxQr_iDxMLbXy-eAps7aFh0uQNuS4O5mdAqfy0KTVjgyKQMbmqB3zoSCL98I029TfPQ4Ck5kBnccDWceEZp2ws"/>
           <span className="text-label-md font-bold text-primary font-headline-md tracking-[0.1em] uppercase">Omnes MarketPlace</span>
-        </a>
-        <nav className="hidden lg:flex items-center space-x-8">
-          <a 
-            className={`${location.pathname === '/' ? 'text-primary border-b-2 border-primary pb-1 font-bold' : 'text-on-surface-variant font-medium'} text-label-md hover:opacity-80 transition-all`} 
-            href="/"
-          >
-            Home
-          </a>
-          <a 
-            className={`${location.pathname === '/browse' ? 'text-primary border-b-2 border-primary pb-1 font-bold' : 'text-on-surface-variant font-medium'} text-label-md hover:text-primary transition-colors`} 
-            href="/browse"
-          >
-            Browse All
-          </a>
-          <a 
-            className={`${location.pathname === '/notifications' ? 'text-primary border-b-2 border-primary pb-1 font-bold' : 'text-on-surface-variant font-medium'} text-label-md hover:text-primary transition-colors`} 
-            href="/notifications"
-          >
-            Notifications
-          </a>
+        </Link>
+        <nav ref={navRef} className="hidden lg:flex items-center gap-8 relative">
+          {navItems.map(({ path, label }) => (
+            <Link
+              key={path}
+              ref={setLinkRef(path)}
+              className={linkClass(path)}
+              to={path}
+            >
+              {label}
+            </Link>
+          ))}
+          {indicator.width > 0 && (
+            <div
+              className="absolute bottom-0 h-0.5 bg-primary rounded-full transition-transform duration-500 ease-in-out"
+              style={{ left: 0, width: indicator.width, transform: `translateX(${indicator.left}px)` }}
+            />
+          )}
         </nav>
         <div className="flex items-center space-x-2 md:space-x-4">
-          <button 
-            className="material-symbols-outlined p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-full transition-all"
-            onClick={() => setShowSearch(!showSearch)}
-            aria-label="Search"
-          >
-            search
-          </button>
-          <button 
-            className="material-symbols-outlined p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-full transition-all"
-            onClick={() => navigate('/cart')}
-            aria-label="Cart"
-          >
-            shopping_cart
-          </button>
-          <button 
-            className="material-symbols-outlined p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-full transition-all"
-            onClick={() => navigate(user?.roles?.includes('admin') ? '/admin' : '/account')}
-            aria-label="Account"
-          >
-            account_circle
-          </button>
+          <button className="material-symbols-outlined p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-full transition-all">search</button>
+          <Link to="/cart" className="material-symbols-outlined p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-full transition-all">shopping_cart</Link>
+          {isSignedIn ? (
+            <Link to="/account">
+              {user?.imageUrl ? (
+                <img alt="Profile" className="w-8 h-8 rounded-full object-cover border-2 border-outline-variant hover:border-primary transition-colors" src={user.imageUrl} />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary text-label-sm font-bold">
+                  {(user?.fullName || user?.firstName || 'U').charAt(0).toUpperCase()}
+                </div>
+              )}
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="material-symbols-outlined p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-full transition-all"
+            >account_circle</Link>
+          )}
         </div>
       </div>
-      
-      {/* Search Bar */}
-      {showSearch && (
-        <div className="absolute top-full left-0 right-0 bg-white border-b border-outline-variant shadow-lg px-margin-mobile md:px-margin-desktop py-4">
-          <form onSubmit={handleSearch} className="max-w-container-max mx-auto">
-            <div className="relative">
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Search products..."
-                className="w-full px-4 py-3 pl-12 bg-surface-container border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent"
-              />
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-              <button
-                type="button"
-                onClick={() => setShowSearch(false)}
-                className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary"
-              >
-                close
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
     </header>
   );
 };
+
+export default Header;

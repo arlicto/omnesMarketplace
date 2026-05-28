@@ -1,289 +1,349 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Layout } from '../components/Layout';
-import apiClient from '../services/apiClient';
-import { useAuthStore } from '../store/authStore';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
-interface DashboardStats {
-  users: { total: number; active: number; buyers: number; sellers: number; admins: number; banned: number };
-  products: { total: number; active: number; inactive: number };
-  orders: { total: number; pending: number; processing: number; shipped: number; delivered: number; cancelled: number };
-  negotiations: { total: number; pending: number; accepted: number; rejected: number };
-  revenue: { total_orders: number; total_revenue: number; avg_order_value: number; delivered_revenue: number };
-}
-
-interface User {
-  id: number;
-  uuid: string;
-  username: string;
-  email: string;
-  status: string;
-  first_name: string | null;
-  last_name: string | null;
-  roles: string[];
-  created_at: string;
-}
-
-const ROLE_FILTERS = [
-  { label: 'All', value: '' },
-  { label: 'Buyers', value: 'buyer' },
-  { label: 'Sellers', value: 'seller' },
-  { label: 'Admins', value: 'admin' },
-] as const;
-
-export const Admin: React.FC = () => {
-  const navigate = useNavigate();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
-
-  const loadData = async (role: string) => {
-    setLoading(true);
-    setError('');
-    try {
-      const params: Record<string, string> = {};
-      if (role) params.role = role;
-      const [statsRes, usersRes] = await Promise.all([
-        apiClient.get('/admin/analytics/overview'),
-        apiClient.get('/admin/users', { params }),
-      ]);
-      setStats(statsRes.data.stats);
-      setUsers(usersRes.data.users);
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || err.message || 'Failed to load data';
-      setError(msg);
-      console.error('Admin load error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+const Admin = () => {
+  const [mounted, setMounted] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    loadData('');
+    // Small delay to ensure the transition triggers after initial render
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 100);
+    return () => clearTimeout(timer);
   }, []);
 
-  const handleFilterChange = (value: string) => {
-    setRoleFilter(value);
-    loadData(value);
-  };
-
-  const handleBan = async (userId: number) => {
-    if (!confirm(`Ban user #${userId}?`)) return;
-    try {
-      await apiClient.post(`/admin/users/${userId}/ban`);
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, status: 'suspended' } : u));
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to ban user.');
-    }
-  };
-
-  const handleUnban = async (userId: number) => {
-    try {
-      await apiClient.post(`/admin/users/${userId}/unban`);
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, status: 'active' } : u));
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to unban user.');
-    }
-  };
-
-  const handleExport = () => {
-    const csv = [
-      'ID,Username,Email,Roles,Status,Joined',
-      ...users.map(u => `${u.id},${u.username},${u.email},"${(u.roles || []).join(',')}",${u.status},${u.created_at}`),
-    ].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'users_export.csv'; a.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
-    <Layout>
-      <div className="flex h-[calc(100vh-73px)] w-full overflow-hidden">
-        <aside className="bg-surface-container-low border-r border-outline-variant w-64 hidden md:flex flex-col p-stack-md space-y-stack-sm h-full">
-          <div className="mb-stack-lg flex flex-col items-center text-center">
-            <img 
-              alt="Omnes Logo" 
-              className="h-12 w-auto object-contain mb-2" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaj3vHZb9tkC91jen03F2veXvobHo9ezqHF6qQdK8ryNbungIosTMi0YG7Gplu3fetQgz6iUdP0m79CxTU7e-HisF85uH7ZvKEQWTsWSAJBt-Ddz4SxM3kR67EXGjUIGpXFh2_LUHL8qa8Vgnpq6vWH-6i04ol12JzKV_eLbtQyuM-L9aTreBqzBxQr_iDxMLbXy-eAps7aFh0uQNuS4O5mdAqfy0KTVjgyKQMbmqB3zoSCL98I029TfPQ4Ck5kBnccDWceEZp2ws" 
-            />
-            <div className="text-label-md font-headline-md font-bold text-primary uppercase tracking-tight">Omnes MarketPlace</div>
-            <div className="text-[11px] font-label-md text-on-surface-variant mt-1">Admin Control Center</div>
+    <div className="flex h-screen w-full bg-surface text-on-surface font-body-md overflow-hidden">
+      {/* SideNavBar */}
+      <aside className={`${mobileMenuOpen ? 'flex absolute z-50 bg-surface' : 'hidden'} md:flex flex-col h-full p-stack-md space-y-stack-sm bg-surface-container-low border-r border-outline-variant w-64 shrink-0`}>
+        <div className="mb-stack-lg px-2 flex flex-col items-center">
+          <div className="bg-surface-container-low p-2 rounded-lg">
+            <img alt="Omnes MarketPlace Logo" className="h-9 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaj3vHZb9tkC91jen03F2veXvobHo9ezqHF6qQdK8ryNbungIosTMi0YG7Gplu3fetQgz6iUdP0m79CxTU7e-HisF85uH7ZvKEQWTsWSAJBt-Ddz4SxM3kR67EXGjUIGpXFh2_LUHL8qa8Vgnpq6vWH-6i04ol12JzKV_eLbtQyuM-L9aTreBqzBxQr_iDxMLbXy-eAps7aFh0uQNuS4O5mdAqfy0KTVjgyKQMbmqB3zoSCL98I029TfPQ4Ck5kBnccDWceEZp2ws"/>
           </div>
-          <nav className="space-y-1">
-            <AdminSidebarLink icon="dashboard" label="Dashboard" active onClick={() => {}} />
-            <AdminSidebarLink icon="storefront" label="Sellers" onClick={() => handleFilterChange('seller')} />
-            <AdminSidebarLink icon="group" label="Buyers" onClick={() => handleFilterChange('buyer')} />
-            <AdminSidebarLink icon="list_alt" label="Listings" onClick={() => alert('Coming soon')} />
-            <AdminSidebarLink icon="payments" label="Transactions" onClick={() => alert('Coming soon')} />
-            <AdminSidebarLink icon="settings" label="Settings" onClick={() => alert('Coming soon')} />
-          </nav>
-        </aside>
-
-        <main className="flex-1 overflow-y-auto bg-surface-bright p-margin-desktop">
-          <header className="mb-stack-lg flex justify-between items-center">
-            <div>
-              <h1 className="text-headline-lg font-headline-lg text-primary">System Dashboard</h1>
-              <p className="text-body-md text-on-surface-variant">Real-time overview of the marketplace ecosystem.</p>
-            </div>
-            <div className="flex gap-4">
-              <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2 bg-white border border-outline-variant rounded-lg text-label-md font-bold text-on-surface-variant hover:bg-surface-container transition-all">
-                <span className="material-symbols-outlined">download</span> Export Report
-              </button>
-            </div>
-          </header>
-
-          {error && (
-            <div className="mb-stack-lg bg-error-container text-on-error-container p-4 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-stack-lg">
-            <AdminStatCard 
-              label="Total Revenue" 
-              value={stats ? `$${stats.revenue.total_revenue.toLocaleString()}` : '-'} 
-              trend={stats ? `${stats.revenue.total_orders} orders` : ''} 
-              icon="payments" 
-              color="secondary" 
-            />
-            <AdminStatCard 
-              label="Active Buyers" 
-              value={stats ? stats.users.buyers.toLocaleString() : '-'} 
-              trend={stats ? `${stats.users.sellers} sellers` : ''} 
-              icon="group" 
-              color="primary" 
-            />
-            <AdminStatCard 
-              label="Live Listings" 
-              value={stats ? stats.products.active.toLocaleString() : '-'} 
-              trend={`${stats ? stats.products.total : 0} total`} 
-              icon="list_alt" 
-              color="tertiary" 
-            />
-            <AdminStatCard 
-              label="Pending Orders" 
-              value={stats ? stats.orders.pending.toLocaleString() : '-'} 
-              trend={stats ? `${stats.negotiations.pending} pending negotations` : ''} 
-              icon="pending_actions" 
-              color="error" 
-            />
+          <h1 className="text-label-md font-bold text-primary mt-2 text-center font-headline-md tracking-[0.1em] uppercase">Omnes MarketPlace</h1>
+          <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mt-1">Admin Management</p>
+        </div>
+        <div className="flex items-center space-x-3 px-2 py-3 mb-stack-md bg-surface-container-high rounded-xl">
+          <img alt="Admin Avatar" className="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrcmBFMyzk-NXNp7-8_Otbh-cbMeDx71HsOtkILpA00cCXSAGZktJKFo3HFWGJ2OqM2nVU8EVjrRByqMU4jDNgNZwKVVEsZf9Tnd5GRnjij4IE6vkTAYUGPbW1Kk-XCB472Vj9tGDj-eIaao55o8WBM4zjsEwkJTuES-q_8Zb_SrCm3QApJODewClWhujVASOtThNK473qEaeLQwUgHbx0EGhuaxBXlKXf5GCdcBUSD4NyRWfLBqTFj7qgkmUqOy5E5xv-yU5p070"/>
+          <div>
+            <p className="font-bold text-label-md text-primary leading-tight">Admin Panel</p>
+            <p className="text-label-sm text-on-surface-variant">Omnes Management</p>
           </div>
+        </div>
+        <nav className="flex-1 flex flex-col space-y-1">
+          <a className="flex items-center space-x-3 p-3 bg-primary-container text-on-primary-container font-bold rounded-lg scale-95 transition-transform" href="#">
+            <span className="material-symbols-outlined">dashboard</span>
+            <span className="text-label-md">Dashboard</span>
+          </a>
+          <a className="flex items-center space-x-3 p-3 text-on-surface-variant hover:bg-surface-variant transition-all rounded-lg" href="#">
+            <span className="material-symbols-outlined">storefront</span>
+            <span className="text-label-md">Sellers</span>
+          </a>
+          <a className="flex items-center space-x-3 p-3 text-on-surface-variant hover:bg-surface-variant transition-all rounded-lg" href="#">
+            <span className="material-symbols-outlined">group</span>
+            <span className="text-label-md">Buyers</span>
+          </a>
+          <a className="flex items-center space-x-3 p-3 text-on-surface-variant hover:bg-surface-variant transition-all rounded-lg" href="#">
+            <span className="material-symbols-outlined">list_alt</span>
+            <span className="text-label-md">Listings</span>
+          </a>
+          <a className="flex items-center space-x-3 p-3 text-on-surface-variant hover:bg-surface-variant transition-all rounded-lg" href="#">
+            <span className="material-symbols-outlined">gavel</span>
+            <span className="text-label-md">Auctions</span>
+          </a>
+          <a className="flex items-center space-x-3 p-3 text-on-surface-variant hover:bg-surface-variant transition-all rounded-lg" href="#">
+            <span className="material-symbols-outlined">receipt_long</span>
+            <span className="text-label-md">Transactions</span>
+          </a>
+          <a className="flex items-center space-x-3 p-3 text-on-surface-variant hover:bg-surface-variant transition-all rounded-lg" href="#">
+            <span className="material-symbols-outlined">settings</span>
+            <span className="text-label-md">Settings</span>
+          </a>
+        </nav>
+        <button className="w-full py-3 px-4 bg-primary text-on-primary font-bold rounded-lg flex items-center justify-center space-x-2 mt-auto hover:opacity-90 transition-opacity">
+          <span className="material-symbols-outlined text-[20px]">add</span>
+          <span className="text-label-md">Add New Admin</span>
+        </button>
+      </aside>
 
-          <section className="bg-white rounded-xl border border-outline-variant shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-outline-variant flex flex-wrap items-center justify-between gap-4">
-              <h2 className="text-headline-md font-headline-md text-primary">Users</h2>
-              <div className="flex gap-2">
-                {ROLE_FILTERS.map((f) => (
-                  <button
-                    key={f.value}
-                    onClick={() => handleFilterChange(f.value)}
-                    className={`px-4 py-2 rounded-lg text-label-md font-bold transition-all ${
-                      roleFilter === f.value
-                        ? 'bg-primary text-on-primary shadow-sm'
-                        : 'bg-surface-container text-on-surface-variant hover:bg-surface-variant'
-                    }`}
-                  >
-                    {f.label}
-                  </button>
-                ))}
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col h-full overflow-y-auto bg-surface relative">
+        {/* Mobile Navigation Toggle */}
+        <button 
+          className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center z-50" 
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          <span className="material-symbols-outlined">{mobileMenuOpen ? 'close' : 'menu'}</span>
+        </button>
+
+        {/* Header */}
+        <header className="w-full px-margin-desktop py-4 bg-surface border-b border-outline-variant flex justify-between items-center sticky top-0 z-10">
+          <div className="flex flex-col">
+            <h2 className="text-headline-md font-headline-md text-primary">Dashboard Overview</h2>
+            <p className="text-body-md text-on-surface-variant">Real-time marketplace performance metrics</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <button className="p-2 text-on-surface-variant hover:text-primary transition-colors">
+              <span className="material-symbols-outlined">search</span>
+            </button>
+            <button className="p-2 text-on-surface-variant hover:text-primary relative transition-colors">
+              <span className="material-symbols-outlined">notifications</span>
+              <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+            </button>
+            <div className="w-px h-6 bg-outline-variant mx-2"></div>
+            <div className="flex items-center space-x-2">
+              <span className="text-label-md font-bold text-primary">System Admin</span>
+              <div className="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold text-xs">SA</div>
+            </div>
+          </div>
+        </header>
+
+        {/* Dashboard Content */}
+        <div className="p-margin-desktop max-w-container-max mx-auto w-full space-y-stack-lg flex-grow">
+          {/* KPI Cards Section */}
+          <section className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+            {/* Total Users */}
+            <div className="bg-surface-container-lowest p-stack-md rounded-xl border border-outline-variant shadow-sm flex flex-col space-y-stack-sm group hover:border-primary transition-colors">
+              <div className="flex justify-between items-start">
+                <div className="p-2 bg-primary-fixed text-primary rounded-lg">
+                  <span className="material-symbols-outlined">person</span>
+                </div>
+                <span className="text-secondary font-bold text-label-sm flex items-center">
+                  +12% <span className="material-symbols-outlined text-[16px]">trending_up</span>
+                </span>
+              </div>
+              <div>
+                <p className="text-label-md text-on-surface-variant">Total Users</p>
+                <h3 className="text-headline-md font-headline-md text-primary">24,892</h3>
               </div>
             </div>
-            <div className="overflow-x-auto">
-              {loading ? (
-                <div className="p-6 text-center text-on-surface-variant">Loading...</div>
-              ) : users.length === 0 ? (
-                <div className="p-6 text-center text-on-surface-variant">No users found.</div>
-              ) : (
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-surface-container-low text-label-sm uppercase tracking-wider text-on-surface-variant">
-                      <th className="px-6 py-4 font-bold">Name</th>
-                      <th className="px-6 py-4 font-bold">Email</th>
-                      <th className="px-6 py-4 font-bold">Role</th>
-                      <th className="px-6 py-4 font-bold">Status</th>
-                      <th className="px-6 py-4 font-bold">Joined</th>
-                      <th className="px-6 py-4 font-bold">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-outline-variant text-body-md">
-                    {users.map((u) => (
-                      <tr key={u.id} className="hover:bg-surface-bright transition-colors">
-                        <td className="px-6 py-4 font-bold text-primary">
-                          {u.first_name || u.username} {u.last_name || ''}
-                        </td>
-                        <td className="px-6 py-4 text-on-surface-variant">{u.email}</td>
-                        <td className="px-6 py-4">
-                          {u.roles?.map((role) => (
-                            <span
-                              key={role}
-                              className={`inline-block px-3 py-1 rounded-full text-label-sm font-bold mr-1 ${
-                                role === 'admin'
-                                  ? 'bg-error-container text-on-error-container'
-                                  : role === 'seller'
-                                  ? 'bg-tertiary-container text-on-tertiary-container'
-                                  : 'bg-primary-container text-on-primary-container'
-                              }`}
-                            >
-                              {role}
-                            </span>
-                          ))}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-3 py-1 rounded-full text-label-sm font-bold ${
-                            u.status === 'active' 
-                              ? 'bg-secondary-container text-on-secondary-container' 
-                              : 'bg-error-container text-on-error-container'
-                          }`}>{u.status}</span>
-                        </td>
-                        <td className="px-6 py-4 text-on-surface-variant">
-                          {new Date(u.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 flex gap-2">
-                          {u.status === 'active' ? (
-                            <button onClick={() => handleBan(u.id)} className="text-error text-label-sm font-bold hover:underline">Ban</button>
-                          ) : (
-                            <button onClick={() => handleUnban(u.id)} className="text-secondary text-label-sm font-bold hover:underline">Unban</button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
+            {/* Active Listings */}
+            <div className="bg-surface-container-lowest p-stack-md rounded-xl border border-outline-variant shadow-sm flex flex-col space-y-stack-sm group hover:border-primary transition-colors">
+              <div className="flex justify-between items-start">
+                <div className="p-2 bg-secondary-fixed text-secondary rounded-lg">
+                  <span className="material-symbols-outlined">inventory_2</span>
+                </div>
+                <span className="text-secondary font-bold text-label-sm flex items-center">
+                  +5.4% <span className="material-symbols-outlined text-[16px]">trending_up</span>
+                </span>
+              </div>
+              <div>
+                <p className="text-label-md text-on-surface-variant">Active Listings</p>
+                <h3 className="text-headline-md font-headline-md text-primary">8,103</h3>
+              </div>
+            </div>
+            {/* Revenue */}
+            <div className="bg-surface-container-lowest p-stack-md rounded-xl border border-outline-variant shadow-sm flex flex-col space-y-stack-sm group hover:border-primary transition-colors">
+              <div className="flex justify-between items-start">
+                <div className="p-2 bg-tertiary-fixed text-tertiary rounded-lg">
+                  <span className="material-symbols-outlined">payments</span>
+                </div>
+                <span className="text-error font-bold text-label-sm flex items-center">
+                  -2.1% <span className="material-symbols-outlined text-[16px]">trending_down</span>
+                </span>
+              </div>
+              <div>
+                <p className="text-label-md text-on-surface-variant">Gross Revenue</p>
+                <h3 className="text-headline-md font-headline-md text-primary">$1,248,500</h3>
+              </div>
             </div>
           </section>
-        </main>
-      </div>
-    </Layout>
+
+          {/* Analytics Row */}
+          <section className="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+            {/* Revenue Trend Chart */}
+            <div className="lg:col-span-8 bg-surface-container-lowest p-stack-lg rounded-xl border border-outline-variant shadow-sm">
+              <div className="flex justify-between items-center mb-stack-lg">
+                <h4 className="text-headline-sm font-headline-md text-primary">Revenue Trend</h4>
+                <div className="flex space-x-2">
+                  <button className="px-3 py-1 text-label-sm font-bold bg-primary text-on-primary rounded-full">Monthly</button>
+                  <button className="px-3 py-1 text-label-sm font-medium text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors">Weekly</button>
+                </div>
+              </div>
+              <div className="h-64 flex items-end justify-between space-x-4 pt-4">
+                <div className="flex flex-col items-center flex-1 group">
+                  <div className="w-full bg-primary-fixed rounded-t-sm group-hover:bg-primary transition-[height] duration-1000 ease-out" style={{ height: mounted ? '40%' : '0px' }}></div>
+                  <span className="text-label-sm text-on-surface-variant mt-2">Jan</span>
+                </div>
+                <div className="flex flex-col items-center flex-1 group">
+                  <div className="w-full bg-primary-fixed rounded-t-sm group-hover:bg-primary transition-[height] duration-1000 ease-out" style={{ height: mounted ? '55%' : '0px' }}></div>
+                  <span className="text-label-sm text-on-surface-variant mt-2">Feb</span>
+                </div>
+                <div className="flex flex-col items-center flex-1 group">
+                  <div className="w-full bg-primary-fixed rounded-t-sm group-hover:bg-primary transition-[height] duration-1000 ease-out" style={{ height: mounted ? '48%' : '0px' }}></div>
+                  <span className="text-label-sm text-on-surface-variant mt-2">Mar</span>
+                </div>
+                <div className="flex flex-col items-center flex-1 group">
+                  <div className="w-full bg-primary-fixed rounded-t-sm group-hover:bg-primary transition-[height] duration-1000 ease-out" style={{ height: mounted ? '75%' : '0px' }}></div>
+                  <span className="text-label-sm text-on-surface-variant mt-2">Apr</span>
+                </div>
+                <div className="flex flex-col items-center flex-1 group">
+                  <div className="w-full bg-primary-fixed rounded-t-sm group-hover:bg-primary transition-[height] duration-1000 ease-out" style={{ height: mounted ? '62%' : '0px' }}></div>
+                  <span className="text-label-sm text-on-surface-variant mt-2">May</span>
+                </div>
+                <div className="flex flex-col items-center flex-1 group">
+                  <div className="w-full bg-primary-fixed rounded-t-sm group-hover:bg-primary transition-[height] duration-1000 ease-out" style={{ height: mounted ? '90%' : '0px' }}></div>
+                  <span className="text-label-sm text-on-surface-variant mt-2">Jun</span>
+                </div>
+              </div>
+            </div>
+            {/* Category Share */}
+            <div className="lg:col-span-4 bg-surface-container-lowest p-stack-lg rounded-xl border border-outline-variant shadow-sm">
+              <h4 className="text-headline-sm font-headline-md text-primary mb-stack-lg">Sales by Category</h4>
+              <div className="space-y-stack-md">
+                <div className="space-y-1">
+                  <div className="flex justify-between text-label-md">
+                    <span className="text-on-surface">Luxury Watches</span>
+                    <span className="font-bold text-primary">42%</span>
+                  </div>
+                  <div className="w-full bg-surface-variant h-2 rounded-full overflow-hidden">
+                    <div className="bg-primary h-full transition-[width] duration-1000 ease-out" style={{ width: mounted ? '42%' : '0px' }}></div>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-label-md">
+                    <span className="text-on-surface">Fine Art</span>
+                    <span className="font-bold text-primary">28%</span>
+                  </div>
+                  <div className="w-full bg-surface-variant h-2 rounded-full overflow-hidden">
+                    <div className="bg-secondary-container h-full transition-[width] duration-1000 ease-out" style={{ width: mounted ? '28%' : '0px' }}></div>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-label-md">
+                    <span className="text-on-surface">Collectibles</span>
+                    <span className="font-bold text-primary">18%</span>
+                  </div>
+                  <div className="w-full bg-surface-variant h-2 rounded-full overflow-hidden">
+                    <div className="bg-tertiary-container h-full transition-[width] duration-1000 ease-out" style={{ width: mounted ? '18%' : '0px' }}></div>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-label-md">
+                    <span className="text-on-surface">Electronics</span>
+                    <span className="font-bold text-primary">12%</span>
+                  </div>
+                  <div className="w-full bg-surface-variant h-2 rounded-full overflow-hidden">
+                    <div className="bg-outline h-full transition-[width] duration-1000 ease-out" style={{ width: mounted ? '12%' : '0px' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Recent Activity Feed */}
+          <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+            <div className="px-stack-lg py-4 border-b border-outline-variant flex justify-between items-center bg-surface-bright">
+              <h4 className="text-headline-sm font-headline-md text-primary">Recent Activity</h4>
+              <button className="text-label-md text-primary hover:underline font-bold">View All</button>
+            </div>
+            <div className="divide-y divide-outline-variant">
+              <div className="p-stack-lg flex items-start space-x-4 hover:bg-surface-container transition-colors">
+                <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container shrink-0">
+                  <span className="material-symbols-outlined">shopping_bag</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-body-md text-on-surface">
+                    <span className="font-bold text-primary">New Sale:</span> Rare Rolex Submariner (Reference 5513) sold by <span className="font-bold">ArtisanHorology</span>.
+                  </p>
+                  <p className="text-label-sm text-on-surface-variant mt-1">2 minutes ago</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-label-md font-bold text-secondary">+$14,200.00</p>
+                  <span className="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">Completed</span>
+                </div>
+              </div>
+              <div className="p-stack-lg flex items-start space-x-4 hover:bg-surface-container transition-colors">
+                <div className="w-10 h-10 rounded-full bg-tertiary-fixed text-tertiary flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined">person_add</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-body-md text-on-surface">
+                    <span className="font-bold text-primary">New Seller:</span> <span className="font-bold">Gallery Modern</span> has been verified and joined the platform.
+                  </p>
+                  <p className="text-label-sm text-on-surface-variant mt-1">15 minutes ago</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] bg-primary-fixed text-on-primary-fixed px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">Verified</span>
+                </div>
+              </div>
+              <div className="p-stack-lg flex items-start space-x-4 hover:bg-surface-container transition-colors">
+                <div className="w-10 h-10 rounded-full bg-error-container text-error flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined">report</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-body-md text-on-surface">
+                    <span className="font-bold text-primary">Listing Flagged:</span> "Limited Edition Sneakers" reported for suspicious authenticity.
+                  </p>
+                  <p className="text-label-sm text-on-surface-variant mt-1">42 minutes ago</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] bg-error-container text-on-error-container px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">Review Needed</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* Footer */}
+        <footer className="mt-auto bg-[#1a2b4c] text-white">
+          <div className="max-w-container-max mx-auto px-margin-desktop py-16">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
+              {/* Brand Column */}
+              <div className="md:col-span-5 space-y-6">
+                <Link className="flex items-center gap-3" to="/">
+                  <img alt="Omnes MarketPlace Logo" className="h-9 w-auto brightness-0 invert" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaj3vHZb9tkC91jen03F2veXvobHo9ezqHF6qQdK8ryNbungIosTMi0YG7Gplu3fetQgz6iUdP0m79CxTU7e-HisF85uH7ZvKEQWTsWSAJBt-Ddz4SxM3kR67EXGjUIGpXFh2_LUHL8qa8Vgnpq6vWH-6i04ol12JzKV_eLbtQyuM-L9aTreBqzBxQr_iDxMLbXy-eAps7aFh0uQNuS4O5mdAqfy0KTVjgyKQMbmqB3zoSCL98I029TfPQ4Ck5kBnccDWceEZp2ws"/>
+                  <span className="text-label-md font-bold tracking-[0.15em] uppercase font-headline-md text-white">Omnes MarketPlace</span>
+                </Link>
+                <p className="text-primary-fixed/70 text-body-md max-w-sm">The official premium marketplace for the Omnes Education community. Curating excellence for students and faculty alike.</p>
+                <div className="flex space-x-4">
+                  <a className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-secondary-container hover:text-on-secondary-container transition-all" href="#"><span className="material-symbols-outlined">public</span></a>
+                  <a className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-secondary-container hover:text-on-secondary-container transition-all" href="#"><span className="material-symbols-outlined">chat</span></a>
+                  <a className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-secondary-container hover:text-on-secondary-container transition-all" href="#"><span className="material-symbols-outlined">share</span></a>
+                </div>
+              </div>
+              {/* Links Grid */}
+              <div className="md:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
+                <div className="space-y-4">
+                  <h4 className="font-bold text-primary-fixed text-label-md uppercase tracking-wider">Marketplace</h4>
+                  <nav className="flex flex-col space-y-3">
+                    <Link className="text-primary-fixed/60 hover:text-white transition-colors text-label-md" to="/browse">Browse All</Link>
+                    <Link className="text-primary-fixed/60 hover:text-white transition-colors text-label-md" to="#">Rare Items</Link>
+                    <Link className="text-primary-fixed/60 hover:text-white transition-colors text-label-md" to="#">Daily Selection</Link>
+                    <Link className="text-primary-fixed/60 hover:text-white transition-colors text-label-md" to="#">Sell With Us</Link>
+                  </nav>
+                </div>
+                <div className="space-y-4">
+                  <h4 className="font-bold text-primary-fixed text-label-md uppercase tracking-wider">Support</h4>
+                  <nav className="flex flex-col space-y-3">
+                    <Link className="text-primary-fixed/60 hover:text-white transition-colors text-label-md" to="#">Contact Hub</Link>
+                    <Link className="text-primary-fixed/60 hover:text-white transition-colors text-label-md" to="#">Student Guidelines</Link>
+                    <Link className="text-primary-fixed/60 hover:text-white transition-colors text-label-md" to="#">Help Center</Link>
+                  </nav>
+                </div>
+                <div className="space-y-4">
+                  <h4 className="font-bold text-primary-fixed text-label-md uppercase tracking-wider">Legal</h4>
+                  <nav className="flex flex-col space-y-3">
+                    <Link className="text-primary-fixed/60 hover:text-white transition-colors text-label-md" to="#">Privacy Policy</Link>
+                    <Link className="text-primary-fixed/60 hover:text-white transition-colors text-label-md" to="#">Terms of Service</Link>
+                    <Link className="text-primary-fixed/60 hover:text-white transition-colors text-label-md" to="#">Compliance</Link>
+                  </nav>
+                </div>
+              </div>
+            </div>
+            <div className="mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
+              <p className="text-primary-fixed/40 text-label-sm">© 2024 Omnes Education. All rights reserved.</p>
+              <div className="flex gap-6">
+                <span className="text-primary-fixed/40 text-label-sm">Designed for Excellence</span>
+                <span className="text-primary-fixed/40 text-label-sm">Paris, FR</span>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </main>
+    </div>
   );
 };
 
-const AdminSidebarLink: React.FC<{ icon: string, label: string, active?: boolean, onClick?: () => void }> = ({ icon, label, active, onClick }) => (
-  <a
-    className={`flex items-center space-x-3 p-3 rounded-lg transition-all font-label-md cursor-pointer ${
-      active ? 'bg-primary-container text-on-primary-container font-bold' : 'text-on-surface-variant hover:bg-surface-variant'
-    }`}
-    onClick={(e) => { e.preventDefault(); onClick?.(); }}
-  >
-    <span className="material-symbols-outlined">{icon}</span>
-    <span>{label}</span>
-  </a>
-);
-
-const AdminStatCard: React.FC<{ label: string, value: string, trend: string, icon: string, color: string }> = ({ 
-  label, value, trend, icon, color 
-}) => (
-  <div className="bg-white p-6 rounded-xl border border-outline-variant shadow-sm">
-    <div className="flex justify-between items-start mb-4">
-      <div className={`p-2 rounded-lg bg-${color}-container/10 text-${color}`}>
-        <span className="material-symbols-outlined">{icon}</span>
-      </div>
-      <span className={`text-label-sm font-bold ${!trend.startsWith('-') ? 'text-secondary' : 'text-error'}`}>{trend}</span>
-    </div>
-    <p className="text-label-md text-on-surface-variant">{label}</p>
-    <p className="text-headline-md font-headline-md text-primary">{value}</p>
-  </div>
-);
+export default Admin;

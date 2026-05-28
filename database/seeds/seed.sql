@@ -1,3 +1,0 @@
--- Master seeder
--- Prefer: ./database/bin/seed.sh
--- Or run each file: 001_roles.sql through 005_commerce.sql in order.
