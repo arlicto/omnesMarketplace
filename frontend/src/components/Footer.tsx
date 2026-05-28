@@ -8,7 +8,9 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="md:col-span-5 space-y-6">
             <Link className="flex items-center gap-3" to="/">
-              <img alt="Omnes MarketPlace Logo" className="h-9 w-auto brightness-0 invert" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaj3vHZb9tkC91jen03F2veXvobHo9ezqHF6qQdK8ryNbungIosTMi0YG7Gplu3fetQgz6iUdP0m79CxTU7e-HisF85uH7ZvKEQWTsWSAJBt-Ddz4SxM3kR67EXGjUIGpXFh2_LUHL8qa8Vgnpq6vWH-6i04ol12JzKV_eLbtQyuM-L9aTreBqzBxQr_iDxMLbXy-eAps7aFh0uQNuS4O5mdAqfy0KTVjgyKQMbmqB3zoSCL98I029TfPQ4Ck5kBnccDWceEZp2ws"/>
+              <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
+                <span className="material-symbols-outlined text-white text-lg">store</span>
+              </div>
               <span className="text-label-md font-bold tracking-[0.15em] uppercase font-headline-md text-white">Omnes MarketPlace</span>
             </Link>
             <p className="text-primary-fixed/70 text-body-md max-w-sm">The official premium marketplace for the Omnes Education community. Curating excellence for students and faculty alike.</p>

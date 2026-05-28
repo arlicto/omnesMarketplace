@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 
 const Home = () => {
@@ -26,14 +27,14 @@ const Home = () => {
       <main className="space-y-stack-lg">
         {/* Hero Section */}
         <section className="relative h-[600px] flex items-center overflow-hidden bg-primary-container">
-          <img alt="Professional Marketplace Hero" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwv7usGVjyarxW4uk7OhrWC7nx-PtDkllAjsx93_mx3aHyzrjuY57JPYT7i4AIsm5UBu0eBnQcWQrlu2-xsI4o6gXyLYjKNoiz9oI_y_5jtjeDgDm-pcA6WsmCJrYGXMDFu9BFTWBiWCewaEZR8FWLpx49p5K1CsTvcua0dtnftBeWCzSAmH9uRhQHBNBF5ZRXEf5oXtVBUCOUC7ln7Zjyyj_mWGRTkQlOuKhdIDlzFeuVr8Hlo7Wxcl1Jkp0kHjF9f_lHW3WsVMc"/>
+          <img alt="Professional Marketplace Hero" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" src="/homepage.png"/>
           <div className="relative z-10 w-full px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto text-on-primary">
             <div className="max-w-2xl space-y-stack-md">
               <h1 className="text-headline-xl-mobile md:text-headline-xl font-headline-xl text-white">Excellence in Every Transaction</h1>
               <p className="text-body-lg font-body-lg text-primary-fixed">Welcome to the official Omnes Education community marketplace. Discover a curated selection of rare collectibles and professional assets tailored for our distinguished network.</p>
               <div className="flex flex-wrap gap-4 pt-stack-sm">
                 <button className="px-8 py-4 bg-secondary-container text-on-secondary-container rounded-lg font-bold hover:scale-105 transition-transform shadow-lg">Shop Now</button>
-                <button className="px-8 py-4 border-2 border-white text-white rounded-lg font-bold hover:bg-white hover:text-primary transition-all">Sell With Us</button>
+                <Link to="/register" className="px-8 py-4 border-2 border-white text-white rounded-lg font-bold hover:bg-white hover:text-primary transition-all">Sell With Us</Link>
               </div>
             </div>
           </div>

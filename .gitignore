@@ -1,0 +1,8 @@
+.env.local
+.env
+node_modules/
+dist/
+frontend/refactor_pages.py
+images/
+*.log
+.DS_Store

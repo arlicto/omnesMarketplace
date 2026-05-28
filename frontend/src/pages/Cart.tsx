@@ -188,13 +188,7 @@ const Cart = () => {
                   <span className="text-label-md">Secure SSL Encryption</span>
                 </div>
               </div>
-              {/* Payment Partners */}
-              <div className="p-stack-md bg-surface-container-low rounded-lg flex justify-around items-center opacity-60">
-                <span className="text-label-sm font-bold grayscale">VISA</span>
-                <span className="text-label-sm font-bold grayscale">MASTERCARD</span>
-                <span className="text-label-sm font-bold grayscale">AMEX</span>
-                <span className="text-label-sm font-bold grayscale">PAYPAL</span>
-              </div>
+
             </div>
           </div>
         </div>

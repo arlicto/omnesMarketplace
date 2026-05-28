@@ -22,7 +22,7 @@ const Seller = () => {
 {/*  SideNavBar  */}
 <aside className="bg-surface-container-low dark:bg-surface-container-highest border-r border-outline-variant dark:border-outline h-auto w-64 hidden md:flex flex-col p-stack-md space-y-stack-sm sticky top-[73px]">
 <div className="mb-stack-lg">
-<div className="text-headline-sm font-headline-md font-bold text-primary dark:text-primary-fixed">Admin Panel</div>
+<div className="text-headline-sm font-headline-md font-bold text-primary dark:text-primary-fixed">Seller Panel</div>
 <div className="text-label-md font-label-md text-on-surface-variant">Omnes Management</div>
 </div>
 <nav className="space-y-1">
