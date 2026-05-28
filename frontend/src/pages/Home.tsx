@@ -33,8 +33,8 @@ const Home = () => {
               <h1 className="text-headline-xl-mobile md:text-headline-xl font-headline-xl text-white">Excellence in Every Transaction</h1>
               <p className="text-body-lg font-body-lg text-primary-fixed">Welcome to the official Omnes Education community marketplace. Discover a curated selection of rare collectibles and professional assets tailored for our distinguished network.</p>
               <div className="flex flex-wrap gap-4 pt-stack-sm">
-                <button className="px-8 py-4 bg-secondary-container text-on-secondary-container rounded-lg font-bold hover:scale-105 transition-transform shadow-lg">Shop Now</button>
-                <Link to="/register" className="px-8 py-4 border-2 border-white text-white rounded-lg font-bold hover:bg-white hover:text-primary transition-all">Sell With Us</Link>
+                <Link to="/browse" className="px-8 py-4 bg-secondary-container text-on-secondary-container rounded-lg font-bold hover:scale-105 transition-transform shadow-lg">Shop Now</Link>
+                <Link to="/register?role=seller" className="px-8 py-4 border-2 border-white text-white rounded-lg font-bold hover:bg-white hover:text-primary transition-all">Sell With Us</Link>
               </div>
             </div>
           </div>
@@ -62,7 +62,7 @@ const Home = () => {
                 <span className="text-label-sm font-label-sm text-secondary bg-secondary-fixed/20 px-2 py-0.5 rounded">Buy Now</span>
                 <h3 className="text-headline-sm font-headline-md text-primary">Titan Precision Watch</h3>
                 <div className="flex justify-between items-center">
-                  <span className="text-headline-sm font-headline-md text-secondary font-bold">$1,249</span>
+                  <span className="text-headline-sm font-headline-md text-secondary font-bold">€1,249</span>
                   <button className="material-symbols-outlined text-primary hover:scale-110 transition-transform">add_shopping_cart</button>
                 </div>
               </div>
@@ -77,7 +77,7 @@ const Home = () => {
                 <span className="text-label-sm font-label-sm text-primary bg-primary-fixed/20 px-2 py-0.5 rounded">Negotiation</span>
                 <h3 className="text-headline-sm font-headline-md text-primary">Studio Pro Audio</h3>
                 <div className="flex justify-between items-center">
-                  <span className="text-headline-sm font-headline-md text-secondary font-bold">$499</span>
+                  <span className="text-headline-sm font-headline-md text-secondary font-bold">€499</span>
                   <button className="material-symbols-outlined text-primary hover:scale-110 transition-transform">add_shopping_cart</button>
                 </div>
               </div>
@@ -92,7 +92,7 @@ const Home = () => {
                 <span className="text-label-sm font-label-sm text-tertiary bg-tertiary-fixed/20 px-2 py-0.5 rounded">Best Offer</span>
                 <h3 className="text-headline-sm font-headline-md text-primary">Limited Edition Library</h3>
                 <div className="flex justify-between items-center">
-                  <span className="text-headline-sm font-headline-md text-secondary font-bold">$2,100</span>
+                  <span className="text-headline-sm font-headline-md text-secondary font-bold">€2,100</span>
                   <button className="material-symbols-outlined text-primary hover:scale-110 transition-transform">add_shopping_cart</button>
                 </div>
               </div>
@@ -158,8 +158,8 @@ const Home = () => {
                 <img alt="Flash Item" className="w-full h-40 object-cover rounded-lg mb-4" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxkqrD_jf2GesDZAyU1BLidgV0y33BbH5L_1jdB7D5XjgdC-Z2tTsC0IcM-ldXRBYS866DQjZycoMsLHPSwmMJ_n8JFkOoiFnjCo9CPY_Er_DpEIokEUTJiReV1wmEeOAeR6bUVLCTJTKKs8lLqqx6oifhopYcQO6iuCfXCseTF40bhCqn5jVm1UXzocIKlA9KBEUrHVYceZHfDqMLiwBUI-RS18bJKB9CY-EVcA0zQRm6VSGlK62wnzUSsRzwzrcAc3gUVDgL31U"/>
                 <h4 className="font-bold text-primary">Nomad Carry-On</h4>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-secondary font-bold font-headline-md">$120</span>
-                  <span className="text-on-surface-variant line-through text-sm">$185</span>
+                  <span className="text-secondary font-bold font-headline-md">€120</span>
+                  <span className="text-on-surface-variant line-through text-sm">€185</span>
                 </div>
               </div>
               {/* Grid Item 2 */}
@@ -167,8 +167,8 @@ const Home = () => {
                 <img alt="Flash Item" className="w-full h-40 object-cover rounded-lg mb-4" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKjcKOwDjRMh8YMFCpiqypfgxX8u3ycBjsCzbGzouzbXVGMPItVqxDefwCBYoXe_PBI0skqFOwtoelahTMSPXidb8yc9coLYPXwATLrJUvyCxP6yb9U6n5esXpC7Y2Swa5eHxcaVcE1fN716X86G5b7w73OjeB1merTV5RyatiNagIdwaQ_hQsiSMM-Kl_eaQDMjGtY-l7DRNYpHurGPzqunQpAyUlpg-85F-aGu5D4gnqb99lk0CBckB6GK47zNQsSfc6_YmzCvQ"/>
                 <h4 className="font-bold text-primary">Retro Cam X</h4>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-secondary font-bold font-headline-md">$95</span>
-                  <span className="text-on-surface-variant line-through text-sm">$140</span>
+                  <span className="text-secondary font-bold font-headline-md">€95</span>
+                  <span className="text-on-surface-variant line-through text-sm">€140</span>
                 </div>
               </div>
               {/* Grid Item 3 */}
@@ -176,8 +176,8 @@ const Home = () => {
                 <img alt="Flash Item" className="w-full h-40 object-cover rounded-lg mb-4" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3N5yg2wC-UEJbtZr9sIYfCwn5W1K43Utg89UQlYRnJV8MxIwQC1LspX3hVonnL4hzxLFf8D15nEDN8GK6xcTpjk0mbQbLS0VP-9Fx9gAe4qb54uRD7akDpGPmvAmAd5CHUnLcvOZQPQOhnXFvBwSYf1elQ7S6Bv9cbCU3oaD0jFOlSE7jNwVl_P4dmc2cfcF5ebocCAJUyPdcHv7z8t1A2MjYJLZedRj9yU_TMg6PqFD8QbZcza9Tijdd4jCwMTH-7Mv99yxxXTc"/>
                 <h4 className="font-bold text-primary">Collector's Case</h4>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-secondary font-bold font-headline-md">$45</span>
-                  <span className="text-on-surface-variant line-through text-sm">$80</span>
+                  <span className="text-secondary font-bold font-headline-md">€45</span>
+                  <span className="text-on-surface-variant line-through text-sm">€80</span>
                 </div>
               </div>
               {/* Grid Item 4 */}
@@ -185,8 +185,8 @@ const Home = () => {
                 <img alt="Flash Item" className="w-full h-40 object-cover rounded-lg mb-4" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC30ylcWasr7Q5_-IT6KFrdtjM3qF_n-0uHrPFe5uYDcgV2tnIL_BxGkozIWwo8-IMlJl3mH54yD3MvRsqn-87RECxlPP6Ra9S7qgJndvSF79ITrAq9uTJiCSNawEDQAZAUI2edt1OaUf15kvDPhMLFJr_tdAKU0eTP8uwk8DKi6YqqasBTbQ-2pFtdIhyzzUYbIU0-k3RE4MzLbhIZOg3oHmF6KpEL95cUUYjPSprogCZo_YM13U7PXw0mVfjGmJCt51AMGIlURyc"/>
                 <h4 className="font-bold text-primary">Omnes Pad v4</h4>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-secondary font-bold font-headline-md">$299</span>
-                  <span className="text-on-surface-variant line-through text-sm">$450</span>
+                  <span className="text-secondary font-bold font-headline-md">€299</span>
+                  <span className="text-on-surface-variant line-through text-sm">€450</span>
                 </div>
               </div>
             </div>

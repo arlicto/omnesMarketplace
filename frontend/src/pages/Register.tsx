@@ -1,11 +1,14 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { SignUp } from '@clerk/react';
 import Layout from "../components/Layout";
 
 type Role = 'buyer' | 'seller';
 
 const Register = () => {
-  const [role, setRole] = useState<Role>('buyer');
+  const [searchParams] = useSearchParams();
+  const initialRole = searchParams.get('role') === 'seller' ? 'seller' : 'buyer';
+  const [role, setRole] = useState<Role>(initialRole);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
   const termsText = role === 'seller'

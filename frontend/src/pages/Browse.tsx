@@ -1,8 +1,8 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 
 const Browse = () => {
-  const [activeTab, setActiveTab] = useState('Immediate Purchase');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLoadMore = () => {
@@ -50,8 +50,8 @@ const Browse = () => {
               <div className="relative pt-1">
                 <input className="w-full h-2 bg-surface-variant rounded-lg appearance-none cursor-pointer accent-primary" type="range"/>
                 <div className="flex justify-between text-label-sm text-on-surface-variant mt-2">
-                  <span>$0</span>
-                  <span>$50,000+</span>
+                  <span>€0</span>
+                  <span>€50,000+</span>
                 </div>
               </div>
             </div>
@@ -75,15 +75,15 @@ const Browse = () => {
 
         {/* Navigation Tabs */}
         <div className="flex border-b border-outline-variant mb-stack-lg overflow-x-auto hide-scrollbar">
-          {['Immediate Purchase', 'Seller–Buyer Negotiation', 'Best Offer / Auction'].map(tab => (
-            <button 
-              key={tab}
-              className={`px-6 py-4 border-b-2 text-label-md transition-all whitespace-nowrap ${activeTab === tab ? 'border-primary text-primary font-bold' : 'border-transparent text-on-surface-variant hover:text-primary font-medium'}`}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
+          <Link to="/shop-now" className="px-6 py-4 border-b-2 border-transparent text-on-surface-variant hover:text-primary font-medium text-label-md transition-all whitespace-nowrap hover:border-primary">
+            Shop Now
+          </Link>
+          <Link to="/make-offer" className="px-6 py-4 border-b-2 border-transparent text-on-surface-variant hover:text-primary font-medium text-label-md transition-all whitespace-nowrap hover:border-primary">
+            Make an Offer
+          </Link>
+          <Link to="/place-bid" className="px-6 py-4 border-b-2 border-transparent text-on-surface-variant hover:text-primary font-medium text-label-md transition-all whitespace-nowrap hover:border-primary">
+            Place a Bid
+          </Link>
         </div>
 
         {/* Product Grid */}
@@ -101,7 +101,7 @@ const Browse = () => {
               <h3 className="text-headline-md font-headline-md text-primary mb-1">Vanguard Chronograph</h3>
               <p className="text-label-sm text-on-surface-variant mb-4 uppercase tracking-wider">Horology &amp; Timepieces</p>
               <div className="mt-auto flex items-center justify-between">
-                <span className="text-headline-md font-bold text-secondary">$12,450.00</span>
+                <span className="text-headline-md font-bold text-secondary">€12,450.00</span>
                 <button className="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md hover:opacity-90 transition-all">Buy Now</button>
               </div>
             </div>
@@ -119,7 +119,7 @@ const Browse = () => {
               <h3 className="text-headline-md font-headline-md text-primary mb-1">Azure Kinetic Canvas</h3>
               <p className="text-label-sm text-on-surface-variant mb-4 uppercase tracking-wider">Contemporary Art</p>
               <div className="mt-auto flex items-center justify-between">
-                <span className="text-headline-md font-bold text-secondary">$8,900.00</span>
+                <span className="text-headline-md font-bold text-secondary">€8,900.00</span>
                 <button className="border-2 border-primary text-primary px-4 py-2 rounded-lg font-label-md hover:bg-primary hover:text-on-primary transition-all">Negotiate</button>
               </div>
             </div>
@@ -139,7 +139,7 @@ const Browse = () => {
               <div className="mt-auto flex items-center justify-between">
                 <div className="flex flex-col">
                   <span className="text-label-sm text-on-surface-variant">Current Bid</span>
-                  <span className="text-headline-md font-bold text-secondary">$3,200.00</span>
+                  <span className="text-headline-md font-bold text-secondary">€3,200.00</span>
                 </div>
                 <button className="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md hover:opacity-90 transition-all">Place Bid</button>
               </div>
@@ -158,7 +158,7 @@ const Browse = () => {
               <h3 className="text-headline-md font-headline-md text-primary mb-1">Sonic Elite Headset</h3>
               <p className="text-label-sm text-on-surface-variant mb-4 uppercase tracking-wider">Audio &amp; Electronics</p>
               <div className="mt-auto flex items-center justify-between">
-                <span className="text-headline-md font-bold text-secondary">$1,200.00</span>
+                <span className="text-headline-md font-bold text-secondary">€1,200.00</span>
                 <button className="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md hover:opacity-90 transition-all">Buy Now</button>
               </div>
             </div>
@@ -176,7 +176,7 @@ const Browse = () => {
               <h3 className="text-headline-md font-headline-md text-primary mb-1">Optic Pro Series 7</h3>
               <p className="text-label-sm text-on-surface-variant mb-4 uppercase tracking-wider">Photography Gear</p>
               <div className="mt-auto flex items-center justify-between">
-                <span className="text-headline-md font-bold text-secondary">$4,500.00</span>
+                <span className="text-headline-md font-bold text-secondary">€4,500.00</span>
                 <button className="border-2 border-primary text-primary px-4 py-2 rounded-lg font-label-md hover:bg-primary hover:text-on-primary transition-all">Negotiate</button>
               </div>
             </div>
@@ -196,7 +196,7 @@ const Browse = () => {
               <div className="mt-auto flex items-center justify-between">
                 <div className="flex flex-col">
                   <span className="text-label-sm text-on-surface-variant">Highest Offer</span>
-                  <span className="text-headline-md font-bold text-secondary">$750.00</span>
+                  <span className="text-headline-md font-bold text-secondary">€750.00</span>
                 </div>
                 <button className="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md hover:opacity-90 transition-all">Make Offer</button>
               </div>

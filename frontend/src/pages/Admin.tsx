@@ -145,7 +145,7 @@ const Admin = () => {
               </div>
               <div>
                 <p className="text-label-md text-on-surface-variant">Gross Revenue</p>
-                <h3 className="text-headline-md font-headline-md text-primary">$1,248,500</h3>
+                <h3 className="text-headline-md font-headline-md text-primary">€1,248,500</h3>
               </div>
             </div>
           </section>
@@ -250,7 +250,7 @@ const Admin = () => {
                   <p className="text-label-sm text-on-surface-variant mt-1">2 minutes ago</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-label-md font-bold text-secondary">+$14,200.00</p>
+                  <p className="text-label-md font-bold text-secondary">+€14,200.00</p>
                   <span className="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">Completed</span>
                 </div>
               </div>
