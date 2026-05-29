@@ -42,3 +42,5 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   },
   unreadCount: () => get().items.filter((n) => !n.read).length,
 }));
+
+# 1780078689489301546
