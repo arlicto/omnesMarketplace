@@ -38,7 +38,7 @@ A curated marketplace platform for the Omnes Education community, built with Rea
 
 ```bash
 # 1. Clone and enter the project
-git clone <repo-url> omnes-marketplace
+git clone arlicto/omnesMarketplace
 cd omnes-marketplace
 
 # 2. Add your Clerk publishable key
