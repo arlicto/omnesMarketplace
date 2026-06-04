@@ -1,0 +1,101 @@
+name,description,price,category,type,image,seller_id,status
+"Casio Vintage Watch","Classic silver digital watch in good condition",35.99,"Watches",buy_now,"https://picsum.photos/seed/1/400","user_001",active
+"TI-84 Calculator","Scientific calculator perfect for engineering students",49.50,"Electronics",buy_now,"https://picsum.photos/seed/2/400","user_002",active
+"Gaming Mouse","RGB gaming mouse with adjustable DPI",22.00,"Electronics",negotiation,"https://picsum.photos/seed/3/400","user_003",active
+"Desk Lamp","LED study desk lamp with brightness control",18.75,"Home",buy_now,"https://picsum.photos/seed/4/400","user_004",active
+"Vintage Hoodie","Oversized black hoodie barely used",27.99,"Fashion",negotiation,"https://picsum.photos/seed/5/400","user_005",active
+"iPad 9th Gen","64GB iPad ideal for notes and streaming",250.00,"Electronics",auction,"https://picsum.photos/seed/6/400","user_006",active
+"Acoustic Guitar","Beginner-friendly acoustic guitar with bag",89.99,"Music",negotiation,"https://picsum.photos/seed/7/400","user_007",active
+"Bike Helmet","Safety helmet for cycling around campus",15.00,"Sports",buy_now,"https://picsum.photos/seed/8/400","user_008",active
+"Mini Fridge","Compact fridge suitable for dorm rooms",120.00,"Home",auction,"https://picsum.photos/seed/9/400","user_009",active
+"Python Programming Book","Beginner to advanced Python guide",12.99,"Books",buy_now,"https://picsum.photos/seed/10/400","user_010",active
+"Basketball Shoes","Nike basketball shoes size 43",65.00,"Fashion",negotiation,"https://picsum.photos/seed/11/400","user_011",active
+"Bluetooth Speaker","Portable waterproof speaker",39.90,"Electronics",buy_now,"https://picsum.photos/seed/12/400","user_012",active
+"Digital Camera","Canon DSLR with kit lens",320.00,"Electronics",auction,"https://picsum.photos/seed/13/400","user_013",active
+"Study Chair","Ergonomic chair for long study sessions",55.00,"Furniture",buy_now,"https://picsum.photos/seed/14/400","user_014",active
+"Anime Wall Art","Set of 3 framed anime posters",20.00,"Art",negotiation,"https://picsum.photos/seed/15/400","user_015",active
+"Mechanical Keyboard","Blue switch RGB keyboard",45.00,"Electronics",buy_now,"https://picsum.photos/seed/16/400","user_016",active
+"Monitor Stand","Wooden monitor riser for desks",14.99,"Home",buy_now,"https://picsum.photos/seed/17/400","user_017",active
+"MacBook Air Sleeve","Protective laptop sleeve 13-inch",10.00,"Accessories",buy_now,"https://picsum.photos/seed/18/400","user_018",active
+"Wireless Earbuds","Noise cancelling earbuds",59.99,"Electronics",negotiation,"https://picsum.photos/seed/19/400","user_019",active
+"Skateboard","Cruiser skateboard for commuting",42.00,"Sports",auction,"https://picsum.photos/seed/20/400","user_020",active
+"Bean Bag","Comfortable bean bag chair",30.00,"Furniture",buy_now,"https://picsum.photos/seed/21/400","user_021",active
+"French Learning Book","Grammar exercises for beginners",9.50,"Books",buy_now,"https://picsum.photos/seed/22/400","user_022",active
+"Air Fryer","Compact air fryer for dorm cooking",75.00,"Home",auction,"https://picsum.photos/seed/23/400","user_023",active
+"Coffee Maker","Single cup coffee machine",28.00,"Home",buy_now,"https://picsum.photos/seed/24/400","user_024",active
+"Smart Watch","Fitness tracking smartwatch",85.00,"Watches",negotiation,"https://picsum.photos/seed/25/400","user_025",active
+"LED Strip Lights","RGB lights for bedroom decor",16.00,"Home",buy_now,"https://picsum.photos/seed/26/400","user_026",active
+"Graphic Tablet","Drawing tablet for digital art",110.00,"Art",auction,"https://picsum.photos/seed/27/400","user_027",active
+"Chemistry Notes","Complete first-year chemistry notes",8.00,"Books",buy_now,"https://picsum.photos/seed/28/400","user_028",active
+"Football Boots","Adidas football boots size 42",48.00,"Sports",negotiation,"https://picsum.photos/seed/29/400","user_029",active
+"External Hard Drive","1TB portable hard drive",50.00,"Electronics",buy_now,"https://picsum.photos/seed/30/400","user_030",active
+"Electric Kettle","Fast boiling electric kettle",19.99,"Home",buy_now,"https://picsum.photos/seed/31/400","user_031",active
+"Office Backpack","Water-resistant laptop backpack",35.00,"Fashion",buy_now,"https://picsum.photos/seed/32/400","user_032",active
+"Gaming Chair","Reclining gaming chair",140.00,"Furniture",auction,"https://picsum.photos/seed/33/400","user_033",active
+"Portable Fan","USB rechargeable mini fan",11.00,"Home",buy_now,"https://picsum.photos/seed/34/400","user_034",active
+"Desk Organizer","Minimal desk storage organizer",13.00,"Home",buy_now,"https://picsum.photos/seed/35/400","user_035",active
+"Winter Jacket","Puffer jacket for cold weather",70.00,"Fashion",negotiation,"https://picsum.photos/seed/36/400","user_036",active
+"Samsung Monitor","24-inch full HD monitor",115.00,"Electronics",auction,"https://picsum.photos/seed/37/400","user_037",active
+"Yoga Mat","Non-slip exercise mat",17.50,"Sports",buy_now,"https://picsum.photos/seed/38/400","user_038",active
+"Portable Projector","Mini projector for movies",130.00,"Electronics",auction,"https://picsum.photos/seed/39/400","user_039",active
+"Wireless Charger","Fast charging pad",14.00,"Electronics",buy_now,"https://picsum.photos/seed/40/400","user_040",active
+"Cookware Set","Basic pots and pans set",45.00,"Home",buy_now,"https://picsum.photos/seed/41/400","user_041",active
+"Smartphone Tripod","Adjustable tripod with remote",18.00,"Accessories",buy_now,"https://picsum.photos/seed/42/400","user_042",active
+"Leather Wallet","Slim brown leather wallet",20.00,"Fashion",buy_now,"https://picsum.photos/seed/43/400","user_043",active
+"Physics Textbook","University level physics textbook",25.00,"Books",negotiation,"https://picsum.photos/seed/44/400","user_044",active
+"Running Shoes","Comfortable running shoes size 44",52.00,"Fashion",buy_now,"https://picsum.photos/seed/45/400","user_045",active
+"Microwave Oven","Compact microwave oven",95.00,"Home",auction,"https://picsum.photos/seed/46/400","user_046",active
+"PS5 Controller","DualSense wireless controller",48.00,"Gaming",buy_now,"https://picsum.photos/seed/47/400","user_047",active
+"Chess Set","Wooden chess board and pieces",21.00,"Games",buy_now,"https://picsum.photos/seed/48/400","user_048",active
+"Bluetooth Headphones","Over-ear wireless headphones",65.00,"Electronics",negotiation,"https://picsum.photos/seed/49/400","user_049",active
+"Standing Desk","Adjustable height desk",180.00,"Furniture",auction,"https://picsum.photos/seed/50/400","user_050",active
+"Printer","HP wireless printer",60.00,"Electronics",buy_now,"https://picsum.photos/seed/51/400","user_051",active
+"Camera Tripod","Professional aluminum tripod",32.00,"Photography",buy_now,"https://picsum.photos/seed/52/400","user_052",active
+"Dorm Rug","Soft rug for dorm rooms",24.00,"Home",buy_now,"https://picsum.photos/seed/53/400","user_053",active
+"Study Table","Compact wooden study table",75.00,"Furniture",negotiation,"https://picsum.photos/seed/54/400","user_054",active
+"Graphic Hoodie","Anime-inspired streetwear hoodie",29.99,"Fashion",buy_now,"https://picsum.photos/seed/55/400","user_055",active
+"Math Workbook","Practice workbook for calculus",14.00,"Books",buy_now,"https://picsum.photos/seed/56/400","user_056",active
+"Nintendo Switch","Portable gaming console",230.00,"Gaming",auction,"https://picsum.photos/seed/57/400","user_057",active
+"Water Bottle","Insulated stainless steel bottle",12.50,"Accessories",buy_now,"https://picsum.photos/seed/58/400","user_058",active
+"Desk Clock","Minimal digital desk clock",9.99,"Home",buy_now,"https://picsum.photos/seed/59/400","user_059",active
+"Canvas Painting","Abstract wall painting",40.00,"Art",negotiation,"https://picsum.photos/seed/60/400","user_060",active
+"Electric Scooter","Foldable commuter scooter",280.00,"Transport",auction,"https://picsum.photos/seed/61/400","user_061",active
+"USB Hub","7-port USB hub for laptops",15.00,"Electronics",buy_now,"https://picsum.photos/seed/62/400","user_062",active
+"Portable SSD","512GB high-speed SSD",72.00,"Electronics",buy_now,"https://picsum.photos/seed/63/400","user_063",active
+"Beanie","Winter wool beanie",8.99,"Fashion",buy_now,"https://picsum.photos/seed/64/400","user_064",active
+"Film Camera","Vintage 35mm camera",95.00,"Photography",auction,"https://picsum.photos/seed/65/400","user_065",active
+"Laundry Basket","Foldable laundry basket",10.00,"Home",buy_now,"https://picsum.photos/seed/66/400","user_066",active
+"Study Lamp","Touch control LED lamp",16.00,"Home",buy_now,"https://picsum.photos/seed/67/400","user_067",active
+"Hair Dryer","Compact travel hair dryer",20.00,"Personal Care",buy_now,"https://picsum.photos/seed/68/400","user_068",active
+"Portable Speaker","Mini Bluetooth speaker",24.00,"Electronics",buy_now,"https://picsum.photos/seed/69/400","user_069",active
+"Keyboard Piano","61-key beginner keyboard",140.00,"Music",auction,"https://picsum.photos/seed/70/400","user_070",active
+"Notebook Set","Pack of 5 notebooks",7.50,"Stationery",buy_now,"https://picsum.photos/seed/71/400","user_071",active
+"Graphic Calculator","Casio scientific calculator",30.00,"Electronics",buy_now,"https://picsum.photos/seed/72/400","user_072",active
+"LED Monitor","22-inch LED display",90.00,"Electronics",negotiation,"https://picsum.photos/seed/73/400","user_073",active
+"Bluetooth Keyboard","Slim wireless keyboard",26.00,"Electronics",buy_now,"https://picsum.photos/seed/74/400","user_074",active
+"Portable Heater","Mini room heater",34.00,"Home",buy_now,"https://picsum.photos/seed/75/400","user_075",active
+"Table Tennis Set","Ping pong rackets and balls",19.00,"Sports",buy_now,"https://picsum.photos/seed/76/400","user_076",active
+"Wireless Mouse","Silent click office mouse",13.00,"Electronics",buy_now,"https://picsum.photos/seed/77/400","user_077",active
+"MacBook Pro 2019","16-inch MacBook Pro used",650.00,"Electronics",auction,"https://picsum.photos/seed/78/400","user_078",active
+"Coffee Table","Small wooden coffee table",44.00,"Furniture",buy_now,"https://picsum.photos/seed/79/400","user_079",active
+"Sunglasses","Polarized black sunglasses",18.00,"Fashion",buy_now,"https://picsum.photos/seed/80/400","user_080",active
+"Phone Stand","Adjustable aluminum stand",9.00,"Accessories",buy_now,"https://picsum.photos/seed/81/400","user_081",active
+"Alarm Clock","Classic bedside alarm clock",11.00,"Home",buy_now,"https://picsum.photos/seed/82/400","user_082",active
+"Campus Bicycle","Used commuter bicycle",160.00,"Transport",negotiation,"https://picsum.photos/seed/83/400","user_083",active
+"Portable Whiteboard","Small reusable whiteboard",14.00,"Stationery",buy_now,"https://picsum.photos/seed/84/400","user_084",active
+"Basketball","Indoor outdoor basketball",16.00,"Sports",buy_now,"https://picsum.photos/seed/85/400","user_085",active
+"VR Headset","Entry-level VR headset",220.00,"Gaming",auction,"https://picsum.photos/seed/86/400","user_086",active
+"HD Webcam","1080p streaming webcam",38.00,"Electronics",buy_now,"https://picsum.photos/seed/87/400","user_087",active
+"Portable Blender","USB smoothie blender",22.00,"Home",buy_now,"https://picsum.photos/seed/88/400","user_088",active
+"Cookbook","Easy recipes for students",13.00,"Books",buy_now,"https://picsum.photos/seed/89/400","user_089",active
+"Desk Shelf","Wooden desktop organizer shelf",27.00,"Furniture",buy_now,"https://picsum.photos/seed/90/400","user_090",active
+"Smart Bulb","WiFi RGB smart bulb",12.00,"Home",buy_now,"https://picsum.photos/seed/91/400","user_091",active
+"Travel Backpack","Large capacity backpack",48.00,"Fashion",negotiation,"https://picsum.photos/seed/92/400","user_092",active
+"Monitor Light Bar","USB screen light",29.00,"Electronics",buy_now,"https://picsum.photos/seed/93/400","user_093",active
+"Portable Printer","Pocket photo printer",88.00,"Electronics",auction,"https://picsum.photos/seed/94/400","user_094",active
+"Camping Tent","2-person lightweight tent",75.00,"Outdoor",negotiation,"https://picsum.photos/seed/95/400","user_095",active
+"Wireless Router","Dual-band WiFi router",33.00,"Electronics",buy_now,"https://picsum.photos/seed/96/400","user_096",active
+"Laptop Cooling Pad","Cooling fan stand for laptops",17.00,"Electronics",buy_now,"https://picsum.photos/seed/97/400","user_097",active
+"French Press","Coffee maker with glass body",15.00,"Home",buy_now,"https://picsum.photos/seed/98/400","user_098",active
+"Beanie Hat","Soft knitted winter hat",9.50,"Fashion",buy_now,"https://picsum.photos/seed/99/400","user_099",active
+"Portable Vacuum","Mini handheld vacuum cleaner",36.00,"Home",buy_now,"https://picsum.photos/seed/100/400","user_100",active

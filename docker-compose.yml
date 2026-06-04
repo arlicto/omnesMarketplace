@@ -5,7 +5,7 @@ services:
       args:
         VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:-}
     ports:
-      - "80:80"
+      - "3000:80"
     depends_on:
       backend:
         condition: service_started
@@ -29,7 +29,7 @@ services:
   mysql:
     image: mysql:8.4
     ports:
-      - "3306:3306"
+      - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root_pass
       MYSQL_DATABASE: omnes_marketplace
@@ -38,6 +38,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ./backend/migrations:/docker-entrypoint-initdb.d
+      - ./backend/my.cnf:/etc/mysql/conf.d/disable-skip-networking.cnf
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s

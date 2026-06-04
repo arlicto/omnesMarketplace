@@ -7,9 +7,12 @@ COPY apache.conf /etc/apache2/sites-available/omnes.conf
 RUN a2ensite omnes
 
 COPY . /var/www/html
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 80
 
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["apache2-foreground"]

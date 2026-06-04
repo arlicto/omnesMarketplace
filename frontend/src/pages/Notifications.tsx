@@ -1,166 +1,100 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNotificationStore } from "../stores/notificationStore";
 import Layout from "../components/Layout";
 
 type Tab = "all" | "unread" | "archived";
 
-type NotificationItem = {
-  id: number;
-  read: boolean;
-  archived: boolean;
-  label: string;
-  labelStyle: string;
-  badge?: string;
-  badgeStyle?: string;
-  title: string;
-  time: string;
-  description: string;
-  action: string;
-  actionStyle: string;
-  alt: string;
-  dataAlt: string;
-  src: string;
+const typeConfig: Record<string, { label: string; style: string }> = {
+  outbid: { label: "Outbid", style: "bg-error text-on-error" },
+  offer_accepted: { label: "Offer Accepted", style: "bg-secondary-container text-on-secondary-container" },
+  offer_rejected: { label: "Offer Rejected", style: "bg-error-container text-on-error-container" },
+  new_arrival: { label: "New Arrival", style: "bg-primary-fixed text-on-primary-fixed-variant" },
+  price_drop: { label: "Price Drop", style: "bg-tertiary-fixed text-on-tertiary-fixed-variant" },
+  auction_won: { label: "Auction Won", style: "bg-secondary-container text-on-secondary-container" },
+  bid_update: { label: "Bid Update", style: "bg-primary-fixed text-on-primary-fixed-variant" },
+  auction_ending: { label: "Auction Ending Soon", style: "bg-tertiary-fixed text-on-tertiary-fixed-variant" },
 };
 
-const notifications: NotificationItem[] = [
-  {
-    id: 1,
-    read: false,
-    archived: false,
-    label: "Outbid",
-    labelStyle: "bg-error text-on-error",
-    badge: "Auction Ending Soon",
-    badgeStyle: "bg-tertiary-fixed text-on-tertiary-fixed-variant",
-    title: `Outbid on "Midnight Horizon" Abstract`,
-    time: "2m ago",
-    description: "Another user has placed a higher bid of €4,200. Act fast to stay in the lead.",
-    action: "View Item",
-    actionStyle: "border border-primary text-primary hover:bg-primary hover:text-on-primary",
-    alt: "Modern Painting",
-    dataAlt: "A vibrant modern abstract oil painting on a square canvas...",
-    src: "https://lh3.googleusercontent.com/aida-public/AB6AXuB-c8XIN_H8rjquBpEq9IqZICrULBXZwhTEsACaodRjeQz3rw9ZdCQj4OlKWriN68G3FfwRWiOVX3ekwpPMGv5gYBA3cKnMVyLt24RlNBFFHk25uL4yMOnbOIfpFSiTGxdUUr2SNwpUPFLYTo0a_Vu_CjEQnpaFejVUCwyhcaAckvCUGXb-mvvoUf_5lmRB8XGd24HhcdCF5usL2odNyx3aPWnSsxrRr8rbpIRC7P9nhVeaj3SuB98h6SWhAAIqetCaTwM8NdkjloQ",
-  },
-  {
-    id: 2,
-    read: false,
-    archived: false,
-    label: "Offer Accepted",
-    labelStyle: "bg-secondary-container text-on-secondary-container",
-    title: "Offer Accepted: Patek Philippe Nautilus",
-    time: "45m ago",
-    description: "The seller has accepted your offer of €82,000. Complete the checkout within 24 hours.",
-    action: "Complete Checkout",
-    actionStyle: "bg-secondary text-on-primary hover:brightness-110",
-    alt: "Luxury Watch",
-    dataAlt: "Close-up of a luxury mechanical watch with an intricate skeleton dial...",
-    src: "https://lh3.googleusercontent.com/aida-public/AB6AXuB_i3maQ9RpWvvSeFJKQeZRk0FGGJxPTYh1gHx3wkU4mZmKxC4Nq8aU5Mc_2RkDWuEJka9DRkhXPqHQ2vEX_On0hFNYsK1D3mwFE70jbxVmjA7i_II0sOIYG8YiZyB00vBqSGKTzvwSujPZDXurLvKwB_t8Daw_9GxY4O0_kE1ZGnmdcVXzuPha3TQjQqxyeapnVvZcdldRE0V5AiIKlKMh1WFalNg6mYdilI5o93mKXwih2JEXipy9UtmkQjf89EpJXGnjWuirwnM",
-  },
-  {
-    id: 3,
-    read: true,
-    archived: false,
-    label: "New Arrival",
-    labelStyle: "bg-primary-fixed text-on-primary-fixed-variant",
-    title: `New Arrival in "Vintage Furniture"`,
-    time: "3h ago",
-    description: `A rare 1960s Danish Teak Desk just landed. Matches your "Mid-century" alert.`,
-    action: "Browse More",
-    actionStyle: "border border-outline text-on-surface-variant hover:bg-surface-variant",
-    alt: "Vintage Desk",
-    dataAlt: "A vintage mid-century modern wooden desk with clean lines and tapered legs...",
-    src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDPkTZRxS-PFgdsUaxEB_s4d-cDoOvxqA_Q9cFuaHSu3VQPYVCuUpikawTwIDUUYz8L0IrTey9iNvEAeSCOlxOKwUf511QlKTw0v-7eaDcRuM3AMqd_bNKlx2alC8yWcZSlHkjIfrCztV_DFWuFnUplOXgbkCUyOJDQCB36mAecucUgU7B8Kwe56mEnBGSy5CGjLxOPaNrVJ1n-lgEFAmPs6jU6luRX7ftFzTxPdHF2BfZ5uuzaJpbnqq1h8mTeXy20LlWdt4QeocM",
-  },
-  {
-    id: 4,
-    read: true,
-    archived: false,
-    label: "Price Drop",
-    labelStyle: "bg-tertiary-fixed text-on-tertiary-fixed-variant",
-    title: "Price Drop: Leica M6 Rangefinder",
-    time: "1d ago",
-    description: "The price has dropped by €500 on your watched item. Now listed at €3,200.",
-    action: "View Item",
-    actionStyle: "border border-primary text-primary hover:bg-primary hover:text-on-primary",
-    alt: "Vintage Camera",
-    dataAlt: "A classic Leica M6 rangefinder camera...",
-    src: "https://lh3.googleusercontent.com/aida-public/AB6AXuB-c8XIN_H8rjquBpEq9IqZICrULBXZwhTEsACaodRjeQz3rw9ZdCQj4OlKWriN68G3FfwRWiOVX3ekwpPMGv5gYBA3cKnMVyLt24RlNBFFHk25uL4yMOnbOIfpFSiTGxdUUr2SNwpUPFLYTo0a_Vu_CjEQnpaFejVUCwyhcaAckvCUGXb-mvvoUf_5lmRB8XGd24HhcdCF5usL2odNyx3aPWnSsxrRr8rbpIRC7P9nhVeaj3SuB98h6SWhAAIqetCaTwM8NdkjloQ",
-  },
-  {
-    id: 5,
-    read: true,
-    archived: true,
-    label: "Auction Won",
-    labelStyle: "bg-secondary-container text-on-secondary-container",
-    title: "You Won: Bauhaus Wall Clock",
-    time: "5d ago",
-    description: "Congratulations! Your winning bid of €890 has been confirmed.",
-    action: "Review Order",
-    actionStyle: "border border-primary text-primary hover:bg-primary hover:text-on-primary",
-    alt: "Bauhaus Clock",
-    dataAlt: "A minimalist Bauhaus wall clock...",
-    src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDPkTZRxS-PFgdsUaxEB_s4d-cDoOvxqA_Q9cFuaHSu3VQPYVCuUpikawTwIDUUYz8L0IrTey9iNvEAeSCOlxOKwUf511QlKTw0v-7eaDcRuM3AMqd_bNKlx2alC8yWcZSlHkjIfrCztV_DFWuFnUplOXgbkCUyOJDQCB36mAecucUgU7B8Kwe56mEnBGSy5CGjLxOPaNrVJ1n-lgEFAmPs6jU6luRX7ftFzTxPdHF2BfZ5uuzaJpbnqq1h8mTeXy20LlWdt4QeocM",
-  },
-  {
-    id: 6,
-    read: true,
-    archived: true,
-    label: "Bid Update",
-    labelStyle: "bg-primary-fixed text-on-primary-fixed-variant",
-    title: "Bid Update: Scandinavian Armchair",
-    time: "1w ago",
-    description: "You've been outbid on the Scandinavian Armchair. Current bid is €1,200.",
-    action: "Place Bid",
-    actionStyle: "bg-secondary text-on-primary hover:brightness-110",
-    alt: "Scandinavian Chair",
-    dataAlt: "A mid-century Scandinavian armchair...",
-    src: "https://lh3.googleusercontent.com/aida-public/AB6AXuB_i3maQ9RpWvvSeFJKQeZRk0FGGJxPTYh1gHx3wkU4mZmKxC4Nq8aU5Mc_2RkDWuEJka9DRkhXPqHQ2vEX_On0hFNYsK1D3mwFE70jbxVmjA7i_II0sOIYG8YiZyB00vBqSGKTzvwSujPZDXurLvKwB_t8Daw_9GxY4O0_kE1ZGnmdcVXzuPha3TQjQqxyeapnVvZcdldRE0V5AiIKlKMh1WFalNg6mYdilI5o93mKXwih2JEXipy9UtmkQjf89EpJXGnjWuirwnM",
-  },
-];
+const defaultType = { label: "Update", style: "bg-surface-variant text-on-surface-variant" };
 
-const NotificationCard = ({ n, archived }: { n: NotificationItem; archived?: boolean }) => (
-  <div
-    className={`group bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex gap-4 transition-all hover:shadow-lg hover:border-primary-fixed ${
-      archived ? "opacity-80 grayscale-[0.5]" : ""
-    }`}
-  >
-    <div className="relative w-24 h-24 flex-shrink-0">
-      <img
-        alt={n.alt}
-        className="w-full h-full object-cover rounded-lg"
-        data-alt={n.dataAlt}
-        src={n.src}
-      />
-      {n.label && (
-        <span className={`absolute -top-2 -left-2 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter ${n.labelStyle}`}>
-          {n.label}
-        </span>
-      )}
-      {!n.read && (
-        <span className="absolute -top-2 -right-2 w-3 h-3 bg-error rounded-full border-2 border-surface-container-lowest" />
-      )}
-    </div>
-    <div className="flex-grow flex flex-col justify-between py-1">
-      <div>
-        <div className="flex justify-between items-start">
-          <h4 className="font-headline-md text-body-lg text-primary leading-tight">{n.title}</h4>
-          <span className="text-label-sm text-outline whitespace-nowrap ml-2">{n.time}</span>
+function timeAgo(dateStr: string): string {
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString();
+}
+
+const NotificationCard = ({ n, onMarkRead, onArchive }: { n: ReturnType<typeof useNotificationStore.getState>['items'][number]; onMarkRead: () => void; onArchive: () => void }) => {
+  const typeInfo = typeConfig[n.type] || defaultType;
+  return (
+    <div
+      className={`group bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex gap-4 transition-all hover:shadow-lg hover:border-primary-fixed ${
+        n.archived ? "opacity-80 grayscale-[0.5]" : ""
+      }`}
+    >
+      <div className="flex-grow flex flex-col justify-between py-1">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            {typeInfo && (
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter ${typeInfo.style}`}>
+                {typeInfo.label}
+              </span>
+            )}
+            {!n.read && (
+              <span className="w-2 h-2 bg-error rounded-full" />
+            )}
+          </div>
+          <div className="flex justify-between items-start">
+            <h4 className="font-headline-md text-body-lg text-primary leading-tight">{n.title}</h4>
+            <span className="text-label-sm text-outline whitespace-nowrap ml-2">{timeAgo(n.createdAt)}</span>
+          </div>
+          <p className="text-body-md text-on-surface-variant mt-1">{n.description}</p>
         </div>
-        <p className="text-body-md text-on-surface-variant mt-1">{n.description}</p>
-      </div>
-      <div className="flex items-center justify-between mt-2">
-        {n.badge && (
-          <div className={`px-2 py-1 text-label-sm rounded uppercase ${n.badgeStyle}`}>{n.badge}</div>
-        )}
-        <button className={`px-4 py-1.5 font-label-md rounded-lg transition-all ${n.actionStyle}`}>
-          {n.action}
-        </button>
+        <div className="flex items-center justify-between mt-3">
+          <div className="flex gap-2">
+            {n.read ? (
+              <button
+                onClick={() => {/* already read */}}
+                className="text-label-sm text-outline cursor-default"
+              >
+                Read
+              </button>
+            ) : (
+              <button
+                onClick={onMarkRead}
+                className="text-label-sm text-secondary hover:underline"
+              >
+                Mark as read
+              </button>
+            )}
+            {!n.archived && (
+              <button
+                onClick={onArchive}
+                className="text-label-sm text-on-surface-variant hover:underline"
+              >
+                Archive
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const Notifications = () => {
   const [tab, setTab] = useState<Tab>("all");
   const [showPrefs, setShowPrefs] = useState(false);
+  const { items, loading, fetchNotifications, markRead, archive } = useNotificationStore();
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "all", label: "All Notifications" },
@@ -168,13 +102,13 @@ const Notifications = () => {
     { key: "archived", label: "Archived" },
   ];
 
-  const filtered = notifications.filter((n) => {
+  const filtered = items.filter((n) => {
     if (tab === "unread") return !n.read && !n.archived;
     if (tab === "archived") return n.archived;
     return !n.archived;
   });
 
-  const unreadCount = notifications.filter((n) => !n.read && !n.archived).length;
+  const unreadCount = items.filter((n) => !n.read && !n.archived).length;
 
   return (
     <Layout>
@@ -290,10 +224,20 @@ const Notifications = () => {
                 <button className="text-label-sm text-secondary hover:underline">Mark all as read</button>
               )}
             </div>
-            {filtered.length > 0 ? (
+            {loading ? (
+              <div className="py-16 text-center">
+                <span className="material-symbols-outlined text-5xl text-outline mb-4">sync</span>
+                <p className="text-body-lg text-on-surface-variant">Loading notifications...</p>
+              </div>
+            ) : filtered.length > 0 ? (
               <div className="space-y-stack-md">
                 {filtered.map((n) => (
-                  <NotificationCard key={n.id} n={n} archived={n.archived} />
+                  <NotificationCard
+                    key={n.id}
+                    n={n}
+                    onMarkRead={() => markRead(n.id)}
+                    onArchive={() => archive(n.id)}
+                  />
                 ))}
               </div>
             ) : (

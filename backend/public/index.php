@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../src/Router.php';
 require_once __DIR__ . '/../src/helpers.php';
+require_once __DIR__ . '/../src/AuthMiddleware.php';
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -15,6 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit;
 }
+
+authenticateRequest();
 
 $router = new Router();
 
@@ -61,10 +64,71 @@ $router->patch('/api/cart/{id}', function (array $params) {
     return json(['items' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
 });
 
+$router->get('/api/products', function () {
+    $pdo = getDb();
+    $type = $_GET['type'] ?? '';
+    $category = $_GET['category'] ?? '';
+    $limit = min((int) ($_GET['limit'] ?? 50), 100);
+    $offset = max((int) ($_GET['offset'] ?? 0), 0);
+
+    $where = [];
+    $params = [];
+
+    if ($type) {
+        $where[] = 'type = ?';
+        $params[] = $type;
+    }
+    if ($category) {
+        $where[] = 'category = ?';
+        $params[] = $category;
+    }
+
+    $where[] = "status = 'active'";
+    $sql = 'SELECT * FROM products';
+    if ($where) {
+        $sql .= ' WHERE ' . implode(' AND ', $where);
+    }
+    $sql .= ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    $params[] = $limit;
+    $params[] = $offset;
+
+    $stmt = $pdo->prepare($sql);
+    // Bind query strings/where parameters
+    foreach ($params as $key => $val) {
+        if ($key < count($params) - 2) {
+            $stmt->bindValue($key + 1, $val, PDO::PARAM_STR);
+        }
+    }
+    // Bind Limit and Offset explicitly as integers
+    $stmt->bindValue(count($params) - 1, $limit, PDO::PARAM_INT);
+    $stmt->bindValue(count($params), $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    return json($stmt->fetchAll(PDO::FETCH_ASSOC));
+});
+
+$router->get('/api/products/{id}', function (array $params) {
+    $pdo = getDb();
+    $stmt = $pdo->prepare('SELECT * FROM products WHERE id = ? AND status = "active"');
+    $stmt->execute([$params['id']]);
+    $product = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$product) {
+        http_response_code(404);
+        return json(['error' => 'Product not found']);
+    }
+    return json($product);
+});
+
 $router->get('/api/notifications', function () {
     $pdo = getDb();
     $stmt = $pdo->query('SELECT * FROM notifications ORDER BY created_at DESC');
-    return json($stmt->fetchAll(PDO::FETCH_ASSOC));
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $rows = array_map(function ($row) {
+        $row['read'] = (bool) $row['is_read'];
+        $row['createdAt'] = $row['created_at'];
+        unset($row['is_read'], $row['created_at']);
+        return $row;
+    }, $rows);
+    return json($rows);
 });
 
 $router->patch('/api/notifications/{id}', function (array $params) {
@@ -72,7 +136,10 @@ $router->patch('/api/notifications/{id}', function (array $params) {
     $pdo = getDb();
     $fields = [];
     $values = [];
-    foreach (['read', 'archived'] as $field) {
+    if (isset($input['read'])) {
+        $input['is_read'] = $input['read'];
+    }
+    foreach (['is_read', 'archived'] as $field) {
         if (isset($input[$field])) {
             $fields[] = "$field = ?";
             $values[] = $input[$field] ? 1 : 0;

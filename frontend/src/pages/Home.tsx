@@ -1,26 +1,34 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getProducts, type Product } from '../lib/api';
 import Layout from '../components/Layout';
 
 const Home = () => {
+  const [picks, setPicks] = useState<Product[]>([]);
+  const [flash, setFlash] = useState<Product[]>([]);
   const [timeLeft, setTimeLeft] = useState('Ends in 04:22:15');
+
+  useEffect(() => {
+    getProducts({ limit: 4 }).then(setPicks).catch(() => {});
+    getProducts({ type: 'auction', limit: 4 }).then(setFlash).catch(() => {});
+  }, []);
 
   useEffect(() => {
     let hours = 4, minutes = 22, seconds = 15;
     const interval = setInterval(() => {
       seconds--;
-      if (seconds < 0) {
-        seconds = 59;
-        minutes--;
-      }
-      if (minutes < 0) {
-        minutes = 59;
-        hours--;
-      }
+      if (seconds < 0) { seconds = 59; minutes--; }
+      if (minutes < 0) { minutes = 59; hours--; }
       setTimeLeft(`Ends in ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const typeInfo = (t: string) => {
+    if (t === 'buy_now') return { label: 'Buy Now', cls: 'text-secondary bg-secondary-fixed/20' };
+    if (t === 'negotiation') return { label: 'Make Offer', cls: 'text-primary bg-primary-fixed/20' };
+    return { label: 'Best Offer', cls: 'text-tertiary bg-tertiary-fixed/20' };
+  };
 
   return (
     <Layout>
@@ -47,56 +55,30 @@ const Home = () => {
               <h2 className="text-headline-lg font-headline-lg text-primary">Selection of the Day</h2>
               <p className="text-body-md font-body-md text-on-surface-variant">Handpicked items of exceptional quality.</p>
             </div>
-            <button className="text-primary font-bold flex items-center gap-1 hover:underline">
+            <Link to="/browse" className="text-primary font-bold flex items-center gap-1 hover:underline">
               View All <span className="material-symbols-outlined">arrow_forward</span>
-            </button>
+            </Link>
           </div>
           <div className="flex overflow-x-auto gap-gutter pb-4 no-scrollbar">
-            {/* Card 1 */}
-            <div className="min-w-[280px] md:min-w-[320px] bg-white rounded-xl shadow-sm border border-outline-variant overflow-hidden group">
-              <div className="h-48 overflow-hidden relative">
-                <img alt="Product" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiQTRBcJI1Tms5soZInV1SgXzmG6ZjC36fA65Ab_GOCsS1ar_rqbyql0KC_FEG6FDl0HRZ4IROxddg794mEJfS7AL6wDOgFNlB1dsZYApvwLXddsYuBerH9MGAHQZwQdJCd5pMK-95B1gF3Iky-FmkEypPTfWzrXX2nlQsMrZjhcNkexv4r1uqWz3pcoA_hNLiMFWLELgb8a7QbFD4Kw-Vn1j8hWqmf-xWZDHXJB23_ITT5qeKmSl3-Nu_EEdQvSwx3efkTioDexQ"/>
-                <span className="absolute top-3 left-3 bg-tertiary-container/50 backdrop-blur-sm text-on-tertiary px-3 py-1 rounded-full text-label-sm font-label-sm">High-end</span>
-              </div>
-              <div className="p-stack-md space-y-2">
-                <span className="text-label-sm font-label-sm text-secondary bg-secondary-fixed/20 px-2 py-0.5 rounded">Buy Now</span>
-                <h3 className="text-headline-sm font-headline-md text-primary">Titan Precision Watch</h3>
-                <div className="flex justify-between items-center">
-                  <span className="text-headline-sm font-headline-md text-secondary font-bold">€1,249</span>
-                  <button className="material-symbols-outlined text-primary hover:scale-110 transition-transform">add_shopping_cart</button>
-                </div>
-              </div>
-            </div>
-            {/* Card 2 */}
-            <div className="min-w-[280px] md:min-w-[320px] bg-white rounded-xl shadow-sm border border-outline-variant overflow-hidden group">
-              <div className="h-48 overflow-hidden relative">
-                <img alt="Product" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBFm2m6Opn8_fQhxcyMYPtX70IrKtF7z4xy7-W2O96VvWhCheZyUZLzVp83qc3KNvgk2g7YO5stybuBiI3L3hq1M6fP1trOgb9r_77qyv6Z2jyBaVChfYDXwLVYp9VmEC3Cc6GWBUAmBNY74j0hNaetkpON0lyKFtYFxFy70ipH3HFTC309KczGlea6pwD5ts7tTmnS5HzvtiVVTrkEk_r2Si913p1wbqgVcr6Jqbr9f_YTJXVuQsZwyQcLNBDh-EngP5Z7nuJ1hw"/>
-                <span className="absolute top-3 left-3 bg-primary-container/50 backdrop-blur-sm text-primary-fixed px-3 py-1 rounded-full text-label-sm font-label-sm">Rare</span>
-              </div>
-              <div className="p-stack-md space-y-2">
-                <span className="text-label-sm font-label-sm text-primary bg-primary-fixed/20 px-2 py-0.5 rounded">Negotiation</span>
-                <h3 className="text-headline-sm font-headline-md text-primary">Studio Pro Audio</h3>
-                <div className="flex justify-between items-center">
-                  <span className="text-headline-sm font-headline-md text-secondary font-bold">€499</span>
-                  <button className="material-symbols-outlined text-primary hover:scale-110 transition-transform">add_shopping_cart</button>
-                </div>
-              </div>
-            </div>
-            {/* Card 3 */}
-            <div className="min-w-[280px] md:min-w-[320px] bg-white rounded-xl shadow-sm border border-outline-variant overflow-hidden group">
-              <div className="h-48 overflow-hidden relative">
-                <img alt="Product" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDOUOq09YtmN8bdwD-5ElgaFQ7hCDsAr9MzYx-9GBSOvdIiFla_msxbpDFoYATHF0jZzEmRX2f_DcuSGFf6QxKcK5zXF5TeaNy4PORJysbWzuTSWQMRYb2URBHJo84YyZw94SiEkUbYYpi1gZ8CTZfFrj1nSZ_ou-29g52xMuRexwCunu0H0D7318atxDh0e9Ejmwnsng0HU_MPWvqkbo1EaeH7Lm884Se1s1vwu9_I1NkwAbExjCxC5hKpLs7y68IGa-Kc6AUeTQ"/>
-                <span className="absolute top-3 left-3 bg-surface-container-high text-on-surface px-3 py-1 rounded-full text-label-sm font-label-sm">Regular</span>
-              </div>
-              <div className="p-stack-md space-y-2">
-                <span className="text-label-sm font-label-sm text-tertiary bg-tertiary-fixed/20 px-2 py-0.5 rounded">Best Offer</span>
-                <h3 className="text-headline-sm font-headline-md text-primary">Limited Edition Library</h3>
-                <div className="flex justify-between items-center">
-                  <span className="text-headline-sm font-headline-md text-secondary font-bold">€2,100</span>
-                  <button className="material-symbols-outlined text-primary hover:scale-110 transition-transform">add_shopping_cart</button>
-                </div>
-              </div>
-            </div>
+            {picks.map((p) => {
+              const t = typeInfo(p.type);
+              return (
+                <Link key={p.id} to={`/product?id=${p.id}`} className="min-w-[280px] md:min-w-[320px] bg-white rounded-xl shadow-sm border border-outline-variant overflow-hidden group">
+                  <div className="h-48 overflow-hidden relative">
+                    <img alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={p.image} />
+                    <span className="absolute top-3 left-3 bg-surface-container-high text-on-surface px-3 py-1 rounded-full text-label-sm font-label-sm">{p.category}</span>
+                  </div>
+                  <div className="p-stack-md space-y-2">
+                    <span className={`text-label-sm font-label-sm ${t.cls} px-2 py-0.5 rounded`}>{t.label}</span>
+                    <h3 className="text-headline-sm font-headline-md text-primary">{p.name}</h3>
+                    <div className="flex justify-between items-center">
+                      <span className="text-headline-sm font-headline-md text-secondary font-bold">€{Number(p.price).toFixed(2)}</span>
+                      <button className="material-symbols-outlined text-primary hover:scale-110 transition-transform">add_shopping_cart</button>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </section>
 
@@ -143,53 +125,39 @@ const Home = () => {
         </section>
 
         {/* Flash Sales */}
-        <section className="bg-surface-container py-stack-lg">
-          <div className="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto space-y-stack-md">
-            <div className="flex items-center gap-4">
+        <section className="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto space-y-stack-md">
+          <div className="flex justify-between items-end">
+            <div>
               <h2 className="text-headline-lg font-headline-lg text-primary">Flash Sales</h2>
-              <div className="bg-error text-on-error px-3 py-1 rounded-full text-label-md font-label-md flex items-center gap-1">
-                <span className="material-symbols-outlined text-sm">timer</span>
-                <span>{timeLeft}</span>
-              </div>
+              <p className="text-body-md font-body-md text-on-surface-variant">Limited time deals on high-demand products.</p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-gutter">
-              {/* Grid Item 1 */}
-              <div className="bg-white p-4 rounded-xl shadow-sm border border-outline-variant hover:shadow-md transition-shadow cursor-pointer">
-                <img alt="Flash Item" className="w-full h-40 object-cover rounded-lg mb-4" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxkqrD_jf2GesDZAyU1BLidgV0y33BbH5L_1jdB7D5XjgdC-Z2tTsC0IcM-ldXRBYS866DQjZycoMsLHPSwmMJ_n8JFkOoiFnjCo9CPY_Er_DpEIokEUTJiReV1wmEeOAeR6bUVLCTJTKKs8lLqqx6oifhopYcQO6iuCfXCseTF40bhCqn5jVm1UXzocIKlA9KBEUrHVYceZHfDqMLiwBUI-RS18bJKB9CY-EVcA0zQRm6VSGlK62wnzUSsRzwzrcAc3gUVDgL31U"/>
-                <h4 className="font-bold text-primary">Nomad Carry-On</h4>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-secondary font-bold font-headline-md">€120</span>
-                  <span className="text-on-surface-variant line-through text-sm">€185</span>
-                </div>
-              </div>
-              {/* Grid Item 2 */}
-              <div className="bg-white p-4 rounded-xl shadow-sm border border-outline-variant hover:shadow-md transition-shadow cursor-pointer">
-                <img alt="Flash Item" className="w-full h-40 object-cover rounded-lg mb-4" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKjcKOwDjRMh8YMFCpiqypfgxX8u3ycBjsCzbGzouzbXVGMPItVqxDefwCBYoXe_PBI0skqFOwtoelahTMSPXidb8yc9coLYPXwATLrJUvyCxP6yb9U6n5esXpC7Y2Swa5eHxcaVcE1fN716X86G5b7w73OjeB1merTV5RyatiNagIdwaQ_hQsiSMM-Kl_eaQDMjGtY-l7DRNYpHurGPzqunQpAyUlpg-85F-aGu5D4gnqb99lk0CBckB6GK47zNQsSfc6_YmzCvQ"/>
-                <h4 className="font-bold text-primary">Retro Cam X</h4>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-secondary font-bold font-headline-md">€95</span>
-                  <span className="text-on-surface-variant line-through text-sm">€140</span>
-                </div>
-              </div>
-              {/* Grid Item 3 */}
-              <div className="bg-white p-4 rounded-xl shadow-sm border border-outline-variant hover:shadow-md transition-shadow cursor-pointer">
-                <img alt="Flash Item" className="w-full h-40 object-cover rounded-lg mb-4" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3N5yg2wC-UEJbtZr9sIYfCwn5W1K43Utg89UQlYRnJV8MxIwQC1LspX3hVonnL4hzxLFf8D15nEDN8GK6xcTpjk0mbQbLS0VP-9Fx9gAe4qb54uRD7akDpGPmvAmAd5CHUnLcvOZQPQOhnXFvBwSYf1elQ7S6Bv9cbCU3oaD0jFOlSE7jNwVl_P4dmc2cfcF5ebocCAJUyPdcHv7z8t1A2MjYJLZedRj9yU_TMg6PqFD8QbZcza9Tijdd4jCwMTH-7Mv99yxxXTc"/>
-                <h4 className="font-bold text-primary">Collector's Case</h4>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-secondary font-bold font-headline-md">€45</span>
-                  <span className="text-on-surface-variant line-through text-sm">€80</span>
-                </div>
-              </div>
-              {/* Grid Item 4 */}
-              <div className="bg-white p-4 rounded-xl shadow-sm border border-outline-variant hover:shadow-md transition-shadow cursor-pointer">
-                <img alt="Flash Item" className="w-full h-40 object-cover rounded-lg mb-4" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC30ylcWasr7Q5_-IT6KFrdtjM3qF_n-0uHrPFe5uYDcgV2tnIL_BxGkozIWwo8-IMlJl3mH54yD3MvRsqn-87RECxlPP6Ra9S7qgJndvSF79ITrAq9uTJiCSNawEDQAZAUI2edt1OaUf15kvDPhMLFJr_tdAKU0eTP8uwk8DKi6YqqasBTbQ-2pFtdIhyzzUYbIU0-k3RE4MzLbhIZOg3oHmF6KpEL95cUUYjPSprogCZo_YM13U7PXw0mVfjGmJCt51AMGIlURyc"/>
-                <h4 className="font-bold text-primary">Omnes Pad v4</h4>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-secondary font-bold font-headline-md">€299</span>
-                  <span className="text-on-surface-variant line-through text-sm">€450</span>
-                </div>
-              </div>
+            <div className="flex items-center gap-4">
+              <span className="text-body-lg font-bold text-secondary">{timeLeft}</span>
+              <Link to="/browse" className="text-primary font-bold flex items-center gap-1 hover:underline">
+                View All <span className="material-symbols-outlined">arrow_forward</span>
+              </Link>
             </div>
+          </div>
+          <div className="flex overflow-x-auto gap-gutter pb-4 no-scrollbar">
+            {flash.map((p) => {
+              const t = typeInfo(p.type);
+              return (
+                <Link key={p.id} to={`/product?id=${p.id}`} className="min-w-[280px] md:min-w-[320px] bg-white rounded-xl shadow-sm border border-outline-variant overflow-hidden group">
+                  <div className="h-48 overflow-hidden relative">
+                    <img alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={p.image} />
+                    <span className="absolute top-3 left-3 bg-surface-container-high text-on-surface px-3 py-1 rounded-full text-label-sm font-label-sm">{p.category}</span>
+                  </div>
+                  <div className="p-stack-md space-y-2">
+                    <span className={`text-label-sm font-label-sm ${t.cls} px-2 py-0.5 rounded`}>{t.label}</span>
+                    <h3 className="text-headline-sm font-headline-md text-primary">{p.name}</h3>
+                    <div className="flex justify-between items-center">
+                      <span className="text-headline-sm font-headline-md text-secondary font-bold">€{Number(p.price).toFixed(2)}</span>
+                      <button className="material-symbols-outlined text-primary hover:scale-110 transition-transform">add_shopping_cart</button>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </section>
 
