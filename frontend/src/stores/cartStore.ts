@@ -46,3 +46,5 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
   total: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
 }));
+
+# 1782929887944702993
