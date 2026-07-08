@@ -209,3 +209,5 @@ function encodeLength(int $length): string
 
     return chr(0x80 | count($bytes)) . pack('C*', ...$bytes);
 }
+
+# 1783534688464345699
