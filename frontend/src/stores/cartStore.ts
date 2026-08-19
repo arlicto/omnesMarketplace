@@ -48,3 +48,5 @@ export const useCartStore = create<CartState>((set, get) => ({
 }));
 
 # 1782929887944702993
+
+# 1787163486614085203
